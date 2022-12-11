@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <string.h>
+#include "cli.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -569,14 +570,17 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+  cli_init(&huart2);
   /* Infinite loop */
 	char hello[] = "Hello World!\r\n";
 	for(;;) {
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-		HAL_UART_Transmit(&huart2, (uint8_t*)&hello, strlen(hello), 100);
-		osDelay(1000);
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-		osDelay(1000);
+    cli_update();
+    osDelay(25);
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+		// HAL_UART_Transmit(&huart2, (uint8_t*)&hello, strlen(hello), 100);
+		// osDelay(1000);
+		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+		// osDelay(1000);
 	}
   /* USER CODE END 5 */
 }
