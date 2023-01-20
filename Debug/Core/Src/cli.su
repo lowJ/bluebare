@@ -1,7 +1,0 @@
-cli.c:27:6:cli_init	16	static
-cli.c:30:6:cli_update	16	static
-cli.c:51:13:buf_is_full	4	static
-cli.c:58:13:handle_cmd	16	static
-cli.c:83:13:handle_hw_cmd	8	static
-cli.c:87:13:handle_sm_cmd	64	static
-cli.c:125:13:handle_dist_cmd	40	static

@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include "cli.h"
+#include "blue_hal.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -571,6 +572,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   cli_init(&huart2);
+  bh_init();
   /* Infinite loop */
 	char hello[] = "Hello World!\r\n";
 	for(;;) {

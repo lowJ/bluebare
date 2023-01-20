@@ -1,3 +1,4 @@
+"./Core/Src/blue_hal.o"
 "./Core/Src/cli.o"
 "./Core/Src/freertos.o"
 "./Core/Src/main.o"
