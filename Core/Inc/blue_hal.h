@@ -28,7 +28,7 @@ typedef enum {
 	DIST_L,
 	DIST_FL,
 	DIST_R,
-	DIST_RL
+	DIST_FR
 } bh_dist_t;
 
 typedef enum {
@@ -38,7 +38,7 @@ typedef enum {
 } bh_led_t;
 
 bool bh_init();
-uint16_t bh_get_distance(bh_dist_t dist);
+uint16_t bh_measure_dist(bh_dist_t dist);
 bool bh_set_motor_pwm(bh_motor_t motor, bh_motor_dir_t dir);
 bool bh_uart_tx(uint8_t* buf, uint16_t num_bytes);
 bool bh_ble_tx(uint8_t *buf, uint16_t num_bytes);

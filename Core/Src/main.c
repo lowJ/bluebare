@@ -517,43 +517,49 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(OB_LED_GPIO_Port, OB_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10|EMIT_4_Pin|M1_FWD_Pin|M1_BACK_Pin
-                          |M2_FWD_Pin|M2_BACK_Pin|LED_GREEN_Pin|EMIT_3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, EMIT_R_Pin|EMIT_L_Pin|EMIT_FL_Pin|MR_FWD_Pin
+                          |ML_BACK_Pin|MR_BACK_Pin|EMIT_FR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, EMIT_2_Pin|EMIT_1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED_RED_Pin|LED_BLUE_Pin|LED_GREEN_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  /*Configure GPIO pin : OB_LED_Pin */
+  GPIO_InitStruct.Pin = OB_LED_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(OB_LED_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB10 EMIT_4_Pin M1_FWD_Pin M1_BACK_Pin
-                           M2_FWD_Pin M2_BACK_Pin LED_GREEN_Pin EMIT_3_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_10|EMIT_4_Pin|M1_FWD_Pin|M1_BACK_Pin
-                          |M2_FWD_Pin|M2_BACK_Pin|LED_GREEN_Pin|EMIT_3_Pin;
+  /*Configure GPIO pins : EMIT_R_Pin EMIT_L_Pin EMIT_FL_Pin MR_FWD_Pin
+                           ML_BACK_Pin MR_BACK_Pin EMIT_FR_Pin */
+  GPIO_InitStruct.Pin = EMIT_R_Pin|EMIT_L_Pin|EMIT_FL_Pin|MR_FWD_Pin
+                          |ML_BACK_Pin|MR_BACK_Pin|EMIT_FR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ML_FWD_Pin */
+  GPIO_InitStruct.Pin = ML_FWD_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(ML_FWD_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LED_RED_Pin LED_BLUE_Pin LED_GREEN_Pin */
+  GPIO_InitStruct.Pin = LED_RED_Pin|LED_BLUE_Pin|LED_GREEN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : BUTTON_Pin */
   GPIO_InitStruct.Pin = BUTTON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(BUTTON_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : EMIT_2_Pin EMIT_1_Pin */
-  GPIO_InitStruct.Pin = EMIT_2_Pin|EMIT_1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
 
@@ -572,7 +578,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   cli_init(&huart2);
-  bh_init();
+  bh_init(&hadc1);
   /* Infinite loop */
 	char hello[] = "Hello World!\r\n";
 	for(;;) {

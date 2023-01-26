@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "cli.h"
+#include "blue_hal.h"
 
 #define CLI_CMD_BUF_SIZE 30
 
@@ -135,19 +136,19 @@ static void handle_dist_cmd() {
     uint16_t dist_val = 0;
 
     if(strcmp("fr", token) == 0){
-        dist_val = 10; /*TODO: Call distance function here*/
+        dist_val = bh_measure_dist(DIST_FR);
     } else if(strcmp("l", token) == 0){
-        dist_val = 20; /*TODO: Call distance function here*/
+        dist_val = bh_measure_dist(DIST_L);
     } else if(strcmp("r", token) == 0){
-        dist_val = 30; /*TODO: Call distance function here*/
+        dist_val = bh_measure_dist(DIST_R);
     } else if(strcmp("fl", token) == 0){
-        dist_val = 65535; /*TODO: Call distance function here*/
+        dist_val = bh_measure_dist(DIST_FL);
     } else {
         HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid direction\r\n", 19, TX_TIMEOUT);
         goto exit;
     }
 
-    snprintf(buf, 10, "%d\r\n", dist_val);
+    snprintf(buf, 10, "%dh\r\n", dist_val);
     HAL_UART_Transmit(cli_uart, (uint8_t*)buf, strlen(buf), TX_TIMEOUT);
 
 exit: ;
