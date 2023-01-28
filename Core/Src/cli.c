@@ -94,16 +94,25 @@ static void handle_sm_cmd() {
         goto exit;
     }
 
-    uint8_t motor_type; // Left or Right
+    bh_motor_t motor_type; // Left or Right
     if(strcmp("l", token) == 0){
-        motor_type = 0; /*TODO: Handle Motor type */
+        motor_type = MOTOR_LEFT;
     } else if(strcmp("r", token) == 0){
-        motor_type = 1;
+        motor_type = MOTOR_RIGHT;
+    }
+
+    token = strtok(NULL, delim);
+    bh_motor_dir_t motor_dir;
+    if(strcmp("f", token) == 0){
+        motor_dir = DIR_FORWARD;
+    } else if(strcmp("b", token) == 0){
+        motor_dir = DIR_BACKWARD;
+    } else if(strcmp("s", token) == 0){
+        motor_dir = DIR_STOP_HARD;
     }
 
     token = strtok(NULL, delim);
     uint16_t speed = (uint16_t)atoi(token);
-    //uint16_t res  strtol()
 
     if(token == NULL) {
         HAL_UART_Transmit(cli_uart, (uint8_t*)"Usage 'sm [l/r] [speed]'\r\n", 26, TX_TIMEOUT);
@@ -113,8 +122,10 @@ static void handle_sm_cmd() {
     uint8_t res = 0; //SetMotor(motor_type, speed) /* TODO: Handle return type */
 
     if(res == 0) {
-        char buf[30] = {0};
-        snprintf(buf, 30, "Set Motor to %d\r\n", speed);
+        char buf[50] = {0};
+        bh_set_motor_dir(motor_type, motor_dir);
+        bh_set_motor_pwm(motor_type, speed);
+        snprintf(buf, 50, "Set Motor to %d, dir %d, motorT %d\r\n", speed, motor_dir, motor_type);
         HAL_UART_Transmit(cli_uart, (uint8_t*)buf, strlen(buf), TX_TIMEOUT);
     } else {
         HAL_UART_Transmit(cli_uart, (uint8_t*)"Error occured setting motor", 27, TX_TIMEOUT);

@@ -101,10 +101,6 @@ void Error_Handler(void);
 #define BUTTON_GPIO_Port GPIOB
 #define EMIT_FR_Pin GPIO_PIN_5
 #define EMIT_FR_GPIO_Port GPIOB
-#define MR_ENC_B_Pin GPIO_PIN_6
-#define MR_ENC_B_GPIO_Port GPIOB
-#define MR_ENC_A_Pin GPIO_PIN_7
-#define MR_ENC_A_GPIO_Port GPIOB
 #define MR_SPD_Pin GPIO_PIN_8
 #define MR_SPD_GPIO_Port GPIOB
 #define ML_SPD_Pin GPIO_PIN_9
