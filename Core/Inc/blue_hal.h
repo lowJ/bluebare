@@ -39,7 +39,8 @@ typedef enum {
 
 bool bh_init();
 uint16_t bh_measure_dist(bh_dist_t dist);
-bool bh_set_motor_pwm(bh_motor_t motor, bh_motor_dir_t dir);
+bool bh_set_motor_dir(bh_motor_t motor, bh_motor_dir_t dir);
+bool bh_set_motor_pwm(bh_motor_t motor, uint16_t dc);
 bool bh_uart_tx(uint8_t* buf, uint16_t num_bytes);
 bool bh_ble_tx(uint8_t *buf, uint16_t num_bytes);
 bool bh_set_led(bh_led_t led, bool state);
