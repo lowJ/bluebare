@@ -65,6 +65,10 @@ void Error_Handler(void);
 #define BUZZER_GPIO_Port GPIOA
 #define V_METER_Pin GPIO_PIN_1
 #define V_METER_GPIO_Port GPIOA
+#define ML_SPD_Pin GPIO_PIN_2
+#define ML_SPD_GPIO_Port GPIOA
+#define MR_SPD_Pin GPIO_PIN_3
+#define MR_SPD_GPIO_Port GPIOA
 #define RECIV_FR_Pin GPIO_PIN_4
 #define RECIV_FR_GPIO_Port GPIOA
 #define RECIV_R_Pin GPIO_PIN_5
@@ -101,10 +105,10 @@ void Error_Handler(void);
 #define BUTTON_GPIO_Port GPIOB
 #define EMIT_FR_Pin GPIO_PIN_5
 #define EMIT_FR_GPIO_Port GPIOB
-#define MR_SPD_Pin GPIO_PIN_8
-#define MR_SPD_GPIO_Port GPIOB
-#define ML_SPD_Pin GPIO_PIN_9
-#define ML_SPD_GPIO_Port GPIOB
+#define MR_ENC_B_Pin GPIO_PIN_6
+#define MR_ENC_B_GPIO_Port GPIOB
+#define MR_ENC_A_Pin GPIO_PIN_7
+#define MR_ENC_A_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

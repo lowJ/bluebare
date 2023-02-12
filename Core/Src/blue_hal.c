@@ -14,7 +14,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 static ADC_HandleTypeDef* hadc1;
-static TIM_HandleTypeDef* htim4;
+static TIM_HandleTypeDef* htim2;
 
 /* Private function prototypes -----------------------------------------------*/
 static void ADC1_Select_CH4();
@@ -23,9 +23,9 @@ static void ADC1_Select_CH8();
 static void ADC1_Select_CH9();
 
 
-bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim4) {
+bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2) {
     hadc1 = adc1;
-    htim4 = tim4;
+    htim2 = tim2;
     return false;
 }
 
@@ -146,14 +146,14 @@ bool bh_set_motor_pwm(bh_motor_t motor, uint16_t dc) {
     switch(motor) {
         case MOTOR_LEFT:
             motor_pwm_channel = TIM_CHANNEL_4;
-            TIM4->CCR4 = dc;
+            TIM2->CCR4 = dc;
             break;
         case MOTOR_RIGHT:
             motor_pwm_channel = TIM_CHANNEL_3;
-            TIM4->CCR3 = dc;
+            TIM2->CCR3 = dc;
             break;
     }
-    HAL_TIM_PWM_Start(htim4, motor_pwm_channel);
+    HAL_TIM_PWM_Start(htim2, motor_pwm_channel);
 
     return false;
 }
