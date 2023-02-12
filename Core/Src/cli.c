@@ -115,7 +115,7 @@ static void handle_sm_cmd() {
     uint16_t speed = (uint16_t)atoi(token);
 
     if(token == NULL) {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Usage 'sm [l/r] [f/b/s] [speed] (60-150)'\r\n", 50, TX_TIMEOUT);
+        HAL_UART_Transmit(cli_uart, (uint8_t*)"Usage 'sm [l/r] [f/b/s] [speed] (1200+)'\r\n", 50, TX_TIMEOUT);
         goto exit;
     }
 
