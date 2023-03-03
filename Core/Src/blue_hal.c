@@ -167,6 +167,25 @@ bool bh_ble_tx(uint8_t *buf, uint16_t num_bytes) {
 }
 
 bool bh_set_led(bh_led_t led, bool state) {
+    GPIO_TypeDef* led_port;
+    uint16_t led_pin;
+    switch(led) {
+        case LED_GREEN:
+            led_port = LED_GREEN_GPIO_Port;
+            led_pin = LED_GREEN_Pin;
+            break;
+        case LED_BLUE:
+            led_port = LED_BLUE_GPIO_Port;
+            led_pin = LED_BLUE_Pin;
+            break;
+        case LED_RED:
+            led_port = LED_RED_GPIO_Port;
+            led_pin = LED_RED_Pin;
+            break;
+    }
+    GPIO_PinState led_state = state ? GPIO_PIN_RESET : GPIO_PIN_SET;
+
+    HAL_GPIO_WritePin(led_port, led_pin, led_state);
     return false;
 }
 bool bh_set_buzzer(uint16_t tone, bool state) {

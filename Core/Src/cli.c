@@ -22,6 +22,7 @@ UART_HandleTypeDef* cli_uart;
 static bool buf_is_full();
 static void handle_cmd();
 static void handle_hw_cmd();
+static void handle_led_cmd();
 static void handle_sm_cmd();
 static void handle_dist_cmd();
 
@@ -73,6 +74,8 @@ static void handle_cmd() {
         handle_sm_cmd();
     } else if(strcmp("dist", token) == 0) {
         handle_dist_cmd();
+    } else if(strcmp("led", token) == 0) {
+        handle_led_cmd();
     } else {
         HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid Command!\r\n", 18, TX_TIMEOUT);
     }
@@ -83,6 +86,42 @@ exit:
 
 static void handle_hw_cmd() {
     HAL_UART_Transmit(cli_uart, (uint8_t*)"Hello World \r\n", 14, TX_TIMEOUT);
+}
+
+static void handle_led_cmd() {
+    const char delim[2] = " ";
+    char* token = strtok(NULL, delim);
+
+    if(token == NULL) {
+        HAL_UART_Transmit(cli_uart, (uint8_t*)"Usage 'led [r/g/b] [0/1]'\r\n", 30, TX_TIMEOUT);
+        goto exit;
+    }
+
+    bh_led_t led = LED_BLUE;
+    if(strcmp("r", token) == 0){
+        led = LED_RED;
+    } else if(strcmp("g", token) == 0){
+        led = LED_GREEN;
+    } else if(strcmp("b", token) == 0){
+        led = LED_BLUE;
+    } else {
+        HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid LED [r/g/b]\r\n", 25, TX_TIMEOUT);
+        led = LED_BLUE;
+    }
+
+    bool state = false;
+    token = strtok(NULL, delim);
+    if(strcmp("1", token) == 0){
+        state = true;
+    } else if (strcmp("0", token) == 0){
+        state = false;
+    } else {
+        HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid LED state [0/1]\r\n", 27, TX_TIMEOUT);
+        state = false;
+    } 
+    bh_set_led(led, state);
+
+    exit: ;
 }
 
 static void handle_sm_cmd() {
@@ -155,7 +194,7 @@ static void handle_dist_cmd() {
     } else if(strcmp("fl", token) == 0){
         dist_val = bh_measure_dist(DIST_FL);
     } else {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid direction\r\n", 19, TX_TIMEOUT);
+        HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid direction\r\n", 22, TX_TIMEOUT);
         goto exit;
     }
 
