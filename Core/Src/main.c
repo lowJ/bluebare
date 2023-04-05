@@ -536,7 +536,7 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   cli_init(&huart1);
-  bh_init(&hadc1, &htim2);
+  bh_init(&hadc1, &htim2, &huart1);
   /* Infinite loop */
 	char hello[] = "Hello World!\r\n";
 	for(;;) {

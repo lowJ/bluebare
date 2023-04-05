@@ -64,7 +64,7 @@ static void handle_cmd() {
     char* token = strtok((char*)cmd_buf, delim);
 
     if(token == NULL) {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"\r\n", 2, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"\r\n");
         goto exit;
     }
 
@@ -77,7 +77,7 @@ static void handle_cmd() {
     } else if(strcmp("led", token) == 0) {
         handle_led_cmd();
     } else {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid Command!\r\n", 18, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
     }
 
 exit:
@@ -85,7 +85,7 @@ exit:
 }
 
 static void handle_hw_cmd() {
-    HAL_UART_Transmit(cli_uart, (uint8_t*)"Hello World \r\n", 14, TX_TIMEOUT);
+    bh_uart_tx_str((uint8_t *)"Hello World \r\n");
 }
 
 static void handle_led_cmd() {
@@ -93,7 +93,8 @@ static void handle_led_cmd() {
     char* token = strtok(NULL, delim);
 
     if(token == NULL) {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Usage 'led [r/g/b] [0/1]'\r\n", 30, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"Usage 'led [r/g/b] [0/1]'\r\n");
+
         goto exit;
     }
 
@@ -105,7 +106,7 @@ static void handle_led_cmd() {
     } else if(strcmp("b", token) == 0){
         led = LED_BLUE;
     } else {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid LED [r/g/b]\r\n", 25, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"Invalid LED [r/g/b]\r\n");
         led = LED_BLUE;
     }
 
@@ -116,7 +117,7 @@ static void handle_led_cmd() {
     } else if (strcmp("0", token) == 0){
         state = false;
     } else {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid LED state [0/1]\r\n", 27, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"Invalid LED state [0/1]\r\n");
         state = false;
     } 
     bh_set_led(led, state);
@@ -129,7 +130,7 @@ static void handle_sm_cmd() {
     char* token = strtok(NULL, delim);
 
     if(token == NULL) {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Usage 'sm [l/r] [f/b/s] [speed] (60-150)'\r\n", 50, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"Usage 'sm [l/r] [f/b/s] [speed] (60-150)'\r\n");
         goto exit;
     }
 
@@ -154,7 +155,7 @@ static void handle_sm_cmd() {
     uint16_t speed = (uint16_t)atoi(token);
 
     if(token == NULL) {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Usage 'sm [l/r] [f/b/s] [speed] (1200+)'\r\n", 50, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"Usage 'sm [l/r] [f/b/s] [speed] (1200+)'\r\n");
         goto exit;
     }
 
@@ -165,9 +166,9 @@ static void handle_sm_cmd() {
         bh_set_motor_dir(motor_type, motor_dir);
         bh_set_motor_pwm(motor_type, speed);
         snprintf(buf, 50, "Set Motor to %d, dir %d, motorT %d\r\n", speed, motor_dir, motor_type);
-        HAL_UART_Transmit(cli_uart, (uint8_t*)buf, strlen(buf), TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)buf);
     } else {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Error occured setting motor", 27, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"Error occured setting motor");
     }
 
     exit: ;
@@ -178,7 +179,7 @@ static void handle_dist_cmd() {
     char* token = strtok(NULL, delim);
 
     if(token == NULL) {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Usage 'dist [fr/l/r/fl]'\r\n", 26, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"Usage 'dist [fr/l/r/fl]'\r\n");
         goto exit;
     }
 
@@ -194,12 +195,12 @@ static void handle_dist_cmd() {
     } else if(strcmp("fl", token) == 0){
         dist_val = bh_measure_dist(DIST_FL);
     } else {
-        HAL_UART_Transmit(cli_uart, (uint8_t*)"Invalid direction\r\n", 22, TX_TIMEOUT);
+        bh_uart_tx_str((uint8_t *)"Invalid direction\r\n");
         goto exit;
     }
 
     snprintf(buf, 10, "%dh\r\n", dist_val);
-    HAL_UART_Transmit(cli_uart, (uint8_t*)buf, strlen(buf), TX_TIMEOUT);
+    bh_uart_tx_str((uint8_t *)buf);
 
 exit: ;
 }

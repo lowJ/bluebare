@@ -9,12 +9,15 @@
 #include "blue_hal.h"
 #include "stm32f1xx_hal.h"
 #include "main.h"
+#include "string.h"
 
 #define EMITTER_PULSE_TIME_MS 1000 /* TODO: Find Smallest Pulse Time */
+#define TX_TIMEOUT 10 /* TODO: Try makig 0*/
 
 /* Private variables ---------------------------------------------------------*/
 static ADC_HandleTypeDef* hadc1;
 static TIM_HandleTypeDef* htim2;
+static UART_HandleTypeDef* uart_cable;
 
 /* Private function prototypes -----------------------------------------------*/
 static void ADC1_Select_CH4();
@@ -23,9 +26,10 @@ static void ADC1_Select_CH8();
 static void ADC1_Select_CH9();
 
 
-bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2) {
+bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle) {
     hadc1 = adc1;
     htim2 = tim2;
+    uart_cable = uart_handle;
     return false;
 }
 
@@ -158,7 +162,8 @@ bool bh_set_motor_pwm(bh_motor_t motor, uint16_t dc) {
     return false;
 }
 
-bool bh_uart_tx(uint8_t* buf, uint16_t num_bytes) {
+bool bh_uart_tx_str(uint8_t* buf) {
+    HAL_UART_Transmit(uart_cable, buf, strlen((char*)buf) + 1 , TX_TIMEOUT);
     return false;
 }
 
