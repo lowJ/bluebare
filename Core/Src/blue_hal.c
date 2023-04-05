@@ -26,10 +26,13 @@ static void ADC1_Select_CH8();
 static void ADC1_Select_CH9();
 
 
-bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle) {
+bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle, 
+            TIM_HandleTypeDef* tim3, TIM_HandleTypeDef* tim4) {
     hadc1 = adc1;
     htim2 = tim2;
     uart_cable = uart_handle;
+    HAL_TIM_Encoder_Start(tim4, TIM_CHANNEL_ALL);
+    HAL_TIM_Encoder_Start(tim3, TIM_CHANNEL_ALL);
     return false;
 }
 
@@ -197,6 +200,30 @@ bool bh_set_buzzer(uint16_t tone, bool state) {
     return false;
 }
 
+uint16_t bh_get_enc_cnt(bh_motor_t motor) {
+    TIM_TypeDef* enc_TIMx;
+    if(motor == MOTOR_LEFT){
+        enc_TIMx = TIM3;
+    } else {
+        //TODO: Error handling or a assert
+        enc_TIMx = TIM4;
+    }
+
+
+    return enc_TIMx->CNT;
+}
+bool bh_reset_enc_cnt(bh_motor_t motor) {
+    TIM_TypeDef* enc_TIMx;
+    if(motor == MOTOR_LEFT){
+        enc_TIMx = TIM3;
+    } else {
+        //TODO: Error handling or a assert
+        enc_TIMx = TIM4;
+    }
+
+    enc_TIMx->CNT = 0;
+    return true;
+}
 /* Private functions ---------------------------------------------------------*/
 static void ADC1_Select_CH4(void) {
   	ADC_ChannelConfTypeDef sConfig = {0};
