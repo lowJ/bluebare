@@ -25,6 +25,7 @@ static void handle_hw_cmd();
 static void handle_led_cmd();
 static void handle_sm_cmd();
 static void handle_dist_cmd();
+static void handle_enc_cmd();
 
 void cli_init(UART_HandleTypeDef* uart_handle) {
     cli_uart = uart_handle;
@@ -76,6 +77,8 @@ static void handle_cmd() {
         handle_dist_cmd();
     } else if(strcmp("led", token) == 0) {
         handle_led_cmd();
+    } else if(strcmp("enc", token) ==0) {
+        handle_enc_cmd();
     } else {
         bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
     }
@@ -130,7 +133,7 @@ static void handle_sm_cmd() {
     char* token = strtok(NULL, delim);
 
     if(token == NULL) {
-        bh_uart_tx_str((uint8_t *)"Usage 'sm [l/r] [f/b/s] [speed] (60-150)'\r\n");
+        bh_uart_tx_str((uint8_t *)"Usage 'sm [l/r] [f/b/s] [speed] (1200+)'\r\n");
         goto exit;
     }
 
@@ -139,9 +142,17 @@ static void handle_sm_cmd() {
         motor_type = MOTOR_LEFT;
     } else if(strcmp("r", token) == 0){
         motor_type = MOTOR_RIGHT;
+    } else {
+        bh_uart_tx_str((uint8_t *)"Invalid motor. Use [l/r]\r\n");
+        goto exit;
     }
 
     token = strtok(NULL, delim);
+    if(token == NULL) {
+        bh_uart_tx_str((uint8_t *)"Usage 'sm [l/r] [f/b/s] [speed] (1200+)'\r\n");
+        goto exit;
+    }
+
     bh_motor_dir_t motor_dir;
     if(strcmp("f", token) == 0){
         motor_dir = DIR_FORWARD;
@@ -149,6 +160,9 @@ static void handle_sm_cmd() {
         motor_dir = DIR_BACKWARD;
     } else if(strcmp("s", token) == 0){
         motor_dir = DIR_STOP_HARD;
+    } else {
+        bh_uart_tx_str((uint8_t *)"Invalid motor direction\r\n");
+        goto exit;
     }
 
     token = strtok(NULL, delim);
@@ -203,4 +217,52 @@ static void handle_dist_cmd() {
     bh_uart_tx_str((uint8_t *)buf);
 
 exit: ;
+}
+
+static void handle_enc_cmd() {
+    const char delim[2] = " ";
+    char* token = strtok(NULL, delim);
+
+    if(token == NULL) {
+        bh_uart_tx_str((uint8_t *)"Usage enc [l/r] [g/r](g=get, r=reset)\r\n");
+        goto exit;
+    }
+
+    bh_motor_dir_t motor;
+
+    if(strcmp("l", token) == 0) {
+        //Left motor
+        motor = MOTOR_LEFT;
+    } else if (strcmp("r", token) == 0) {
+        //Right motor
+        motor = MOTOR_RIGHT;
+    } else {
+        bh_uart_tx_str((uint8_t *)"Invalid motor. Use [l/r]\r\n");
+        goto exit;
+    }
+
+    token = strtok(NULL, delim);
+    if(token == NULL) {
+        bh_uart_tx_str((uint8_t *)"Usage enc [l/r] [g/r](g=get, r=reset) \r\n");
+        goto exit;
+    }
+
+    if(strcmp("g", token) == 0) {
+        //Get encoder count
+        char buf[10];
+        uint16_t enc_cnt = bh_get_enc_cnt(motor);
+        snprintf(buf, 10, "%dh\r\n", enc_cnt);
+        bh_uart_tx_str((uint8_t *)buf);
+
+    } else if (strcmp("r", token) == 0) {
+        //Reset encoder count
+        bh_reset_enc_cnt(motor);
+        //TODO: check res
+    } else {
+        bh_uart_tx_str((uint8_t *)"Invalid operation. Use [g/r](g=get, r=reset)\r\n");
+        goto exit;
+    }
+
+exit: ;
+
 }
