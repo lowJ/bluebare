@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "cmsis_os.h"
 #include "cli.h"
 #include "blue_hal.h"
 
@@ -13,6 +14,7 @@
 
 #define TX_TIMEOUT 10
 #define RX_TIMEOUT 0
+#define REPEATER_DELAY 100
 
 static uint8_t cmd_buf[CLI_CMD_BUF_SIZE] = {0};
 static uint16_t cmd_buf_end = 0;
@@ -21,6 +23,7 @@ UART_HandleTypeDef* cli_uart;
 
 static bool buf_is_full();
 static void handle_cmd();
+static void handle_cmd_prefix();
 static void handle_hw_cmd();
 static void handle_led_cmd();
 static void handle_sm_cmd();
@@ -62,6 +65,10 @@ static void handle_cmd() {
 
     cmd_buf[cmd_buf_end] = '\0';
     const char delim[2] = " ";
+
+    uint8_t save_buf[CLI_CMD_BUF_SIZE];
+    strncpy((char*)save_buf, (char*)cmd_buf, sizeof(save_buf));
+
     char* token = strtok((char*)cmd_buf, delim);
 
     if(token == NULL) {
@@ -69,22 +76,59 @@ static void handle_cmd() {
         goto exit;
     }
 
-    if(strcmp("hw", token) == 0) {
-        handle_hw_cmd();
-    } else if(strcmp("sm", token) == 0) {
-        handle_sm_cmd();
-    } else if(strcmp("dist", token) == 0) {
-        handle_dist_cmd();
-    } else if(strcmp("led", token) == 0) {
-        handle_led_cmd();
-    } else if(strcmp("enc", token) ==0) {
-        handle_enc_cmd();
+    bool repeater = false;
+    if(strcmp("rr", token) == 0) {
+        repeater = true;
+    }
+
+    if(repeater) {
+        bool stop_repeat = false;
+
+        while(!stop_repeat){
+            token = strtok(NULL, delim);
+
+            if(token == NULL) {
+                bh_uart_tx_str((uint8_t *)"No command given to repeater\r\n");
+                goto exit;
+            }
+
+            handle_cmd_prefix(token);
+
+            uint8_t received;
+            HAL_StatusTypeDef res = HAL_UART_Receive(cli_uart, &received, 1, 0);
+            if(res != HAL_TIMEOUT){ //If keypress detected, stop repeating command
+                stop_repeat = true;
+            } else {
+                osDelay(REPEATER_DELAY);
+                strncpy((char*)cmd_buf, (char*)save_buf, sizeof(cmd_buf));
+                token = strtok((char*)cmd_buf, delim); //Parse the rr first before looping
+            }
+        }
+
     } else {
-        bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
+        handle_cmd_prefix(token);
+
     }
 
 exit:
     cmd_buf_end = 0;
+}
+
+//When calling this function, strtok must have just finished parsing the command prefix.
+static void handle_cmd_prefix(char* token) {
+        if(strcmp("hw", token) == 0) {
+            handle_hw_cmd();
+        } else if(strcmp("sm", token) == 0) {
+            handle_sm_cmd();
+        } else if(strcmp("dist", token) == 0) {
+            handle_dist_cmd();
+        } else if(strcmp("led", token) == 0) {
+            handle_led_cmd();
+        } else if(strcmp("enc", token) ==0) {
+            handle_enc_cmd();
+        } else {
+            bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
+        }
 }
 
 static void handle_hw_cmd() {
