@@ -11,7 +11,7 @@
 #include "main.h"
 #include "string.h"
 
-#define EMITTER_PULSE_TIME_MS 1000 /* TODO: Find Smallest Pulse Time */
+#define EMITTER_PULSE_TIME_MS 5/* TODO: Find Smallest Pulse Time */
 #define TX_TIMEOUT 10 /* TODO: Try makig 0*/
 
 /* Private variables ---------------------------------------------------------*/
