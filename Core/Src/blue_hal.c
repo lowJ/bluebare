@@ -11,8 +11,9 @@
 #include "main.h"
 #include "string.h"
 
-#define EMITTER_PULSE_TIME_MS 1000 /* TODO: Find Smallest Pulse Time */
+#define EMITTER_PULSE_TIME_MS 1/* TODO: Find Smallest Pulse Time */
 #define TX_TIMEOUT 10 /* TODO: Try makig 0*/
+#define NUM_AVG_SAMPLES 3
 
 /* Private variables ---------------------------------------------------------*/
 static ADC_HandleTypeDef* hadc1;
@@ -77,7 +78,7 @@ uint16_t bh_measure_dist(bh_dist_t dist) {
     }
 
     HAL_GPIO_WritePin(emitter_port, emitter_pin, GPIO_PIN_SET);
-    HAL_Delay(EMITTER_PULSE_TIME_MS);
+    HAL_Delay(EMITTER_PULSE_TIME_MS); /* TODO: If using free rtos*/
     HAL_GPIO_WritePin(receiver_port, receiver_pin, GPIO_PIN_SET);
     HAL_ADC_Start(hadc1);
     HAL_ADC_PollForConversion(hadc1, HAL_MAX_DELAY);
@@ -224,6 +225,15 @@ bool bh_reset_enc_cnt(bh_motor_t motor) {
     enc_TIMx->CNT = 0;
     return true;
 }
+
+uint16_t bh_measure_dist_avg(bh_dist_t dist_sensor){
+    uint32_t acc = 0;
+    for(int i = 0; i < NUM_AVG_SAMPLES; ++i) {
+        acc += bh_measure_dist(dist_sensor);
+    }
+    return (uint16_t)(acc/NUM_AVG_SAMPLES);
+}
+
 /* Private functions ---------------------------------------------------------*/
 static void ADC1_Select_CH4(void) {
   	ADC_ChannelConfTypeDef sConfig = {0};

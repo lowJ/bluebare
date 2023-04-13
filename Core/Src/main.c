@@ -25,6 +25,7 @@
 #include <string.h>
 #include "cli.h"
 #include "blue_hal.h"
+#include "nav.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,6 +35,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define START_SIGNAL_DIST_FR 2700 /* TODO: Find value*/
+#define START_SIGNAL_DIST_R 3000 /* TODO: Find value*/
+#define START_SIGNAL_DIST_RANGE 500 /* TODO: Find value*/ 
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -80,12 +84,23 @@ void StartDefaultTask(void *argument);
 void taskBlinkFunc(void *argument);
 
 /* USER CODE BEGIN PFP */
-
+static void wait_for_start_signal();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static void wait_for_start_signal(){
+  while(1){
+    uint16_t fr = bh_measure_dist_avg(DIST_FR);
+    uint16_t r = bh_measure_dist_avg(DIST_R);
+    if(fr < START_SIGNAL_DIST_FR + START_SIGNAL_DIST_RANGE && fr > START_SIGNAL_DIST_FR - START_SIGNAL_DIST_RANGE
+      && r < START_SIGNAL_DIST_R + START_SIGNAL_DIST_RANGE && r > START_SIGNAL_DIST_R - START_SIGNAL_DIST_RANGE) {
+      break;
+    }
+    osDelay(100);
+  }
 
+}
 /* USER CODE END 0 */
 
 /**
@@ -537,6 +552,18 @@ void StartDefaultTask(void *argument)
   /* USER CODE BEGIN 5 */
   cli_init(&huart1);
   bh_init(&hadc1, &htim2, &huart1, &htim3, &htim4);
+
+  bh_set_led(LED_BLUE, 0);
+  bh_set_led(LED_GREEN, 0);
+  bh_set_led(LED_RED, 1);
+
+  wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
+
+  bh_set_led(LED_RED, 0);
+
+  osDelay(2000);
+
+  nav_init();
   /* Infinite loop */
 	char hello[] = "Hello World!\r\n";
 	for(;;) {
