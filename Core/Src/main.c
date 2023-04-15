@@ -564,11 +564,18 @@ void StartDefaultTask(void *argument)
   osDelay(2000);
 
   nav_init();
+
+  straight();
   /* Infinite loop */
 	char hello[] = "Hello World!\r\n";
 	for(;;) {
-    cli_update();
-    osDelay(25);
+    bh_set_led(LED_RED, 1);
+    wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
+    bh_set_led(LED_RED, 0);
+    osDelay(2000);
+    straight();
+    //cli_update();
+    //osDelay(25);
 		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 		// HAL_UART_Transmit(&huart2, (uint8_t*)&hello, strlen(hello), 100);
 		// osDelay(1000);

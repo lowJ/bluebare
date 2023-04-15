@@ -13,7 +13,7 @@
 
 #define EMITTER_PULSE_TIME_MS 1/* TODO: Find Smallest Pulse Time */
 #define TX_TIMEOUT 10 /* TODO: Try makig 0*/
-#define NUM_AVG_SAMPLES 3
+#define NUM_AVG_SAMPLES 1
 
 /* Private variables ---------------------------------------------------------*/
 static ADC_HandleTypeDef* hadc1;

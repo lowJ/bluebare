@@ -14,5 +14,6 @@
 bool nav_init();
 bool is_left_wall_detected();
 bool is_right_wall_detected();
+void straight();
 
 #endif /* INC_NAV_H_ */
