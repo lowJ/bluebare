@@ -7,21 +7,22 @@
 
 #include "nav.h"
 #include "blue_hal.h"
+#include <stdlib.h>
 
 #define WALL_DETECTION_PADDING 200 /* TODO: Adjust this value*/
 
-uint16_t left_wall_dist_thresh = 0;
-uint16_t right_wall_dist_thresh = 0;
+uint16_t left_wall_middle = 0;
+uint16_t right_wall_middle = 0;
 
 bool nav_init() {
-    left_wall_dist_thresh = bh_measure_dist_avg(DIST_L);
-    right_wall_dist_thresh = bh_measure_dist_avg(DIST_R);
+    left_wall_middle = bh_measure_dist_avg(DIST_L);
+    left_wall_middle = bh_measure_dist_avg(DIST_R);
     return true;
 }
 
 bool is_left_wall_detected(){
     uint16_t m = bh_measure_dist_avg(DIST_L);
-    if(m > left_wall_dist_thresh - WALL_DETECTION_PADDING) {
+    if(m > left_wall_middle - WALL_DETECTION_PADDING) {
        bh_set_led(LED_BLUE, 1);
        return true;
     } else {
@@ -32,7 +33,7 @@ bool is_left_wall_detected(){
 
 bool is_right_wall_detected(){
     uint16_t m = bh_measure_dist_avg(DIST_R);
-    if(m > right_wall_dist_thresh - WALL_DETECTION_PADDING) {
+    if(m > left_wall_middle - WALL_DETECTION_PADDING) {
         bh_set_led(LED_RED, 1);
         return true;
     } else {
@@ -40,3 +41,89 @@ bool is_right_wall_detected(){
         return false;
     }
 }
+
+#define LEFT_BASE_SPD 1450
+#define RIGHT_BASE_SPD 1400
+#define g_P 0.2
+#define g_D 0
+void straight(){
+    int32_t left_right_offset =  left_wall_middle - right_wall_middle;
+    int32_t p_error = 0;
+    int32_t d_error = 0;
+    int32_t p_error_old;
+    int32_t total_error;
+
+    bh_set_motor_dir(MOTOR_LEFT, DIR_FORWARD);
+    bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
+
+    uint16_t goal_cnt = 65535 - 680; 
+
+     
+    bh_reset_enc_cnt(MOTOR_LEFT);
+    bh_reset_enc_cnt(MOTOR_RIGHT);
+
+    
+    //while(1){
+    while(bh_get_enc_cnt(MOTOR_LEFT) > goal_cnt || bh_get_enc_cnt(MOTOR_LEFT) == 0) {
+        if(is_left_wall_detected() && is_right_wall_detected()) {
+            bool lr_diff_is_negative = false;
+            int32_t lr_diff = bh_measure_dist_avg(DIST_L) - bh_measure_dist_avg(DIST_R);
+            if(lr_diff < 0) lr_diff_is_negative = true;
+
+            p_error = abs(lr_diff) - abs(left_right_offset);
+            if(lr_diff_is_negative) p_error = p_error * -1;
+            d_error = p_error - p_error_old;
+        } else if (is_left_wall_detected()) {
+
+        } else if (is_right_wall_detected()) {
+
+        } else {
+
+        }
+
+
+        total_error = (g_P * p_error) + (g_D * d_error);
+        p_error_old = p_error;
+        //Positive error = veer right, negative error = veer left
+
+        bh_set_motor_pwm(MOTOR_LEFT, LEFT_BASE_SPD + total_error);
+        bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
+        HAL_Delay(2);
+
+    }
+    bh_set_motor_pwm(MOTOR_LEFT, 0);
+    bh_set_motor_pwm(MOTOR_RIGHT, 0);
+
+
+
+}
+
+/*Green Ye basic pid example*/
+/*
+void PID(void)       
+{    
+    if((leftSensor > hasLeftWall && rightSensor > hasRightWall))//has both walls
+    {  //ccw direction is positive
+        errorP = rightSensor - leftSensor - 63;//63 is the offset between left and right sensor when mouse in the middle of cell
+        errorD = errorP - oldErrorP;
+    }        
+    else if((leftSensor > hasLeftWall))//only has left wall
+    {
+        errorP = 2 * (leftMiddleValue – leftSensor);
+        errorD = errorP - oldErrorP;
+    }
+    else if((rightSensor > hasRightWall))//only has right wall
+    {
+        errorP = 2 * (rightSensor – rightMiddleValue);
+        errorD = errorP – oldErrorP;
+    }
+    else if((leftSensor < hasLeftWall && rightSensor <hasRightWall))//no wall, use encoder or gyro
+    {
+        errorP = 0;//(leftEncoder – rightEncoder*1005/1000)*3;
+        errorD = 0;
+    }
+    totalError = P * errorP + D * errorD;
+    oldErrorP = errorP;
+    setLeftPwm(leftBaseSpeed – totalError);
+    setRightPwm(rightBaseSpeed + totalError);    
+} */
