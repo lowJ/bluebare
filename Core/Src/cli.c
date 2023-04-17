@@ -6,6 +6,7 @@
 #include "cmsis_os.h"
 #include "cli.h"
 #include "blue_hal.h"
+#include "nav.h"
 
 #define CLI_CMD_BUF_SIZE 30
 
@@ -29,6 +30,7 @@ static void handle_led_cmd();
 static void handle_sm_cmd();
 static void handle_dist_cmd();
 static void handle_enc_cmd();
+static void handle_spd_cmd();
 
 void cli_init(UART_HandleTypeDef* uart_handle) {
     cli_uart = uart_handle;
@@ -126,6 +128,8 @@ static void handle_cmd_prefix(char* token) {
             handle_led_cmd();
         } else if(strcmp("enc", token) ==0) {
             handle_enc_cmd();
+        } else if(strcmp("spd", token) ==0) {
+            handle_spd_cmd();
         } else {
             bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
         }
@@ -308,5 +312,53 @@ static void handle_enc_cmd() {
     }
 
 exit: ;
+}
 
+
+static void handle_spd_cmd() {
+    const char delim[2] = " ";
+    char* token = strtok(NULL, delim);
+
+    if(token == NULL) {
+        bh_uart_tx_str((uint8_t *)"Usage spd [l/r] [f/b] \r\n");
+        goto exit;
+    }
+
+    bh_motor_dir_t motor;
+
+    if(strcmp("l", token) == 0) {
+        //Left motor
+        motor = MOTOR_LEFT;
+    } else if (strcmp("r", token) == 0) {
+        //Right motor
+        motor = MOTOR_RIGHT;
+    } else {
+        bh_uart_tx_str((uint8_t *)"Invalid motor. Use [l/r]\r\n");
+        goto exit;
+    }
+
+    token = strtok(NULL, delim);
+    if(token == NULL) {
+        bh_uart_tx_str((uint8_t *)"Usage spd [l/r] [f/b] \r\n");
+        goto exit;
+    }
+
+    if(strcmp("f", token) == 0) {
+        uint16_t spd = cnt_per_ms(motor, DIR_FORWARD);
+        char buf[10];
+        snprintf(buf, 10, "%d\r\n", spd);
+        bh_uart_tx_str((uint8_t *)buf);
+        
+    } else if (strcmp("b", token) == 0) {
+        uint16_t spd = cnt_per_ms(motor, DIR_BACKWARD);
+        char buf[10];
+        snprintf(buf, 10, "%d\r\n", spd);
+        bh_uart_tx_str((uint8_t *)buf);
+
+    } else {
+        bh_uart_tx_str((uint8_t *)"Usage spd [l/r] [f/b] \r\n");
+        goto exit;
+    }
+
+exit: ;
 }

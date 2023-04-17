@@ -98,6 +98,33 @@ void straight(){
 
 }
 
+/* Does not handle overflow*/
+uint16_t cnt_per_ms(bh_motor_t motor, bh_motor_dir_t dir){
+    uint16_t start_cnt = bh_get_enc_cnt(motor);
+    HAL_Delay(12);
+    uint16_t end_cnt = bh_get_enc_cnt(motor);
+    if(dir == DIR_FORWARD){
+        //Values should be decreasing
+        uint16_t cnts;
+        if(end_cnt > start_cnt) { //Handle overflow case
+            cnts = ((65535-end_cnt)+1) + start_cnt;
+        } else {
+            cnts = start_cnt - end_cnt;
+        }
+        return cnts;
+
+    } else {
+        //Values should be increasing
+        uint16_t cnts;
+        if(end_cnt < start_cnt) { //Handle overflow case
+            cnts = ((65535-start_cnt)+1) + end_cnt;
+        } else {
+            cnts = end_cnt - start_cnt;
+        }
+        return cnts;
+
+    }
+}
 /*Green Ye basic pid example*/
 /*
 void PID(void)       
