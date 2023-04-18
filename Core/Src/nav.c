@@ -15,29 +15,29 @@ uint16_t left_wall_middle = 0;
 uint16_t right_wall_middle = 0;
 
 bool nav_init() {
-    left_wall_middle = bh_measure_dist_avg(DIST_L);
-    left_wall_middle = bh_measure_dist_avg(DIST_R);
+    left_wall_middle = Measure_Avg_IR_Dist(DIST_L);
+    left_wall_middle = Measure_Avg_IR_Dist(DIST_R);
     return true;
 }
 
 bool is_left_wall_detected(){
-    uint16_t m = bh_measure_dist_avg(DIST_L);
+    uint16_t m = Measure_Avg_IR_Dist(DIST_L);
     if(m > left_wall_middle - WALL_DETECTION_PADDING) {
-       bh_set_led(LED_BLUE, 1);
+       Set_LED(LED_BLUE, 1);
        return true;
     } else {
-        bh_set_led(LED_BLUE, 0);
+        Set_LED(LED_BLUE, 0);
         return false;
     }
 }
 
 bool is_right_wall_detected(){
-    uint16_t m = bh_measure_dist_avg(DIST_R);
+    uint16_t m = Measure_Avg_IR_Dist(DIST_R);
     if(m > left_wall_middle - WALL_DETECTION_PADDING) {
-        bh_set_led(LED_RED, 1);
+        Set_LED(LED_RED, 1);
         return true;
     } else {
-        bh_set_led(LED_RED,0);
+        Set_LED(LED_RED,0);
         return false;
     }
 }
@@ -54,23 +54,23 @@ void straight(){
     int32_t p_error_old;
     int32_t total_error;
 
-    bh_set_motor_dir(MOTOR_LEFT, DIR_FORWARD);
-    bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
+    Set_Motor_Dir(MOTOR_LEFT, DIR_FORWARD);
+    Set_Motor_Dir(MOTOR_RIGHT, DIR_FORWARD);
 
     uint16_t goal_cnt = 65535 - 680; 
 
      
-    bh_reset_enc_cnt_to_max(MOTOR_LEFT);
-    bh_reset_enc_cnt_to_max(MOTOR_RIGHT);
+    Reset_Enc_Count_To_Max(MOTOR_LEFT);
+    Reset_Enc_Count_To_Max(MOTOR_RIGHT);
 
     
     //while(1){
-    while(bh_get_enc_cnt(MOTOR_LEFT) > goal_cnt || bh_get_enc_cnt(MOTOR_LEFT) == 0)
+    while(Get_Enc_Count(MOTOR_LEFT) > goal_cnt || Get_Enc_Count(MOTOR_LEFT) == 0)
     {
         if(is_left_wall_detected() && is_right_wall_detected())
         {
             bool lr_diff_is_negative = false;
-            int32_t lr_diff = bh_measure_dist_avg(DIST_L) - bh_measure_dist_avg(DIST_R);
+            int32_t lr_diff = Measure_Avg_IR_Dist(DIST_L) - Measure_Avg_IR_Dist(DIST_R);
             if(lr_diff < 0) lr_diff_is_negative = true;
 
             p_error = abs(lr_diff) - abs(left_right_offset);
@@ -88,15 +88,15 @@ void straight(){
         p_error_old = p_error;
         //Positive error = veer right, negative error = veer left
 
-        bh_set_motor_pwm(MOTOR_LEFT, LEFT_BASE_SPD + total_error);
+        Set_Motor_PWM(MOTOR_LEFT, LEFT_BASE_SPD + total_error);
         //bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
-        bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
+        Set_Motor_PWM(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
 
         HAL_Delay(2);
 
     }
-    bh_set_motor_pwm(MOTOR_LEFT, 0);
-    bh_set_motor_pwm(MOTOR_RIGHT, 0);
+    Set_Motor_PWM(MOTOR_LEFT, 0);
+    Set_Motor_PWM(MOTOR_RIGHT, 0);
 
 }
 

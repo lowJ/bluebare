@@ -17,26 +17,26 @@
 typedef enum {
 	MOTOR_LEFT,
 	MOTOR_RIGHT
-} bh_motor_t;
+} MOTOR_TYPE;
 
 typedef enum {
 	DIR_FORWARD,
 	DIR_BACKWARD,
 	DIR_STOP_HARD,
 	DIR_STOP_SOFT
-} bh_motor_dir_t;
+} MOTOR_DIR_TYPE;
 
 typedef enum {
 	DIST_L,
 	DIST_FL,
 	DIST_R,
 	DIST_FR
-} bh_dist_t;
+} IR_TYPE;
 
 typedef enum {
 	ROT_CLOCKWISE,
 	ROT_COUNTER_CLOCKWISE
-} bh_rotation_dir_t;
+} MOTOR_ROT_TYPE;
 
 typedef enum {
 	LED_RED,
@@ -44,20 +44,26 @@ typedef enum {
 	LED_BLUE
 } bh_led_t;
 
-bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle, TIM_HandleTypeDef* tim3, TIM_HandleTypeDef* tim4);
-uint16_t bh_measure_dist(bh_dist_t dist);
-bool bh_set_motor_dir(bh_motor_t motor, bh_motor_dir_t dir);
-bool bh_set_motor_pwm(bh_motor_t motor, uint16_t dc);
+bool Init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle, TIM_HandleTypeDef* tim3, TIM_HandleTypeDef* tim4);
+
+bool Set_LED(bh_led_t led, bool state);
+
+bool Set_Motor_Dir(MOTOR_TYPE motor, MOTOR_DIR_TYPE dir);
+bool Set_Motor_PWM(MOTOR_TYPE motor, uint16_t dc);
+
+bool Spin_Motor_By_Enc_Ticks(MOTOR_TYPE motor, uint16_t enc_ticks);
+bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed);
+bool Rotate_Mouse_By_Enc_Ticks(MOTOR_ROT_TYPE dir, uint16_t encTicks, uint16_t speed);
+
+bool Reset_Enc_Count(MOTOR_TYPE motor);
+bool Reset_Enc_Count_To_Max(MOTOR_TYPE motor);
+
+uint16_t Get_Enc_Count(MOTOR_TYPE motor);
+uint16_t Measure_IR_Dist(IR_TYPE ir);
+uint16_t Measure_Avg_IR_Dist(IR_TYPE ir);
+
 bool bh_uart_tx_str(uint8_t* buf);
 bool bh_ble_tx(uint8_t *buf, uint16_t num_bytes);
-bool bh_set_led(bh_led_t led, bool state);
 bool bh_set_buzzer(uint16_t tone, bool state); /* TODO: Verify params */
-uint16_t bh_get_enc_cnt(bh_motor_t motor);
-bool bh_reset_enc_cnt(bh_motor_t motor);
-bool bh_reset_enc_cnt_to_max(bh_motor_t motor);
-uint16_t bh_measure_dist_avg(bh_dist_t dist_sensor);
-bool spin_motor_by_encoder_count(bh_motor_t motor, uint16_t enc_ticks);
-bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed);
-bool BH_Rotate_Tick_Amnt(bh_rotation_dir_t dir, uint16_t encTicks, uint16_t speed);
 
 #endif /* INC_BLUE_HAL_H_ */

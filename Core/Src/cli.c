@@ -65,8 +65,8 @@ static bool buf_is_full() {
     return false;
 }
 
-static void handle_cmd() {
-
+static void handle_cmd()
+{
     cmd_buf[cmd_buf_end] = '\0';
     const char delim[2] = " ";
 
@@ -177,7 +177,7 @@ static void handle_led_cmd() {
         bh_uart_tx_str((uint8_t *)"Invalid LED state [0/1]\r\n");
         state = false;
     } 
-    bh_set_led(led, state);
+    Set_LED(led, state);
 
     exit: ;
 }
@@ -191,7 +191,7 @@ static void handle_sm_cmd() {
         goto exit;
     }
 
-    bh_motor_t motor_type; // Left or Right
+    MOTOR_TYPE motor_type; // Left or Right
     if(strcmp("l", token) == 0){
         motor_type = MOTOR_LEFT;
     } else if(strcmp("r", token) == 0){
@@ -207,7 +207,7 @@ static void handle_sm_cmd() {
         goto exit;
     }
 
-    bh_motor_dir_t motor_dir;
+    MOTOR_DIR_TYPE motor_dir;
     if(strcmp("f", token) == 0){
         motor_dir = DIR_FORWARD;
     } else if(strcmp("b", token) == 0){
@@ -231,8 +231,8 @@ static void handle_sm_cmd() {
 
     if(res == 0) {
         char buf[50] = {0};
-        bh_set_motor_dir(motor_type, motor_dir);
-        bh_set_motor_pwm(motor_type, speed);
+        Set_Motor_Dir(motor_type, motor_dir);
+        Set_Motor_PWM(motor_type, speed);
         snprintf(buf, 50, "Set Motor to %d, dir %d, motorT %d\r\n", speed, motor_dir, motor_type);
         bh_uart_tx_str((uint8_t *)buf);
     } else {
@@ -255,13 +255,13 @@ static void handle_dist_cmd() {
     uint16_t dist_val = 0;
 
     if(strcmp("fr", token) == 0){
-        dist_val = bh_measure_dist(DIST_FR);
+        dist_val = Measure_IR_Dist(DIST_FR);
     } else if(strcmp("l", token) == 0){
-        dist_val = bh_measure_dist(DIST_L);
+        dist_val = Measure_IR_Dist(DIST_L);
     } else if(strcmp("r", token) == 0){
-        dist_val = bh_measure_dist(DIST_R);
+        dist_val = Measure_IR_Dist(DIST_R);
     } else if(strcmp("fl", token) == 0){
-        dist_val = bh_measure_dist(DIST_FL);
+        dist_val = Measure_IR_Dist(DIST_FL);
     } else {
         bh_uart_tx_str((uint8_t *)"Invalid direction\r\n");
         goto exit;
@@ -282,7 +282,7 @@ static void handle_enc_cmd() {
         goto exit;
     }
 
-    bh_motor_dir_t motor;
+    MOTOR_DIR_TYPE motor;
 
     if(strcmp("l", token) == 0) {
         //Left motor
@@ -304,13 +304,13 @@ static void handle_enc_cmd() {
     if(strcmp("g", token) == 0) {
         //Get encoder count
         char buf[10];
-        uint16_t enc_cnt = bh_get_enc_cnt(motor);
+        uint16_t enc_cnt = Get_Enc_Count(motor);
         snprintf(buf, 10, "%dh\r\n", enc_cnt);
         bh_uart_tx_str((uint8_t *)buf);
 
     } else if (strcmp("r", token) == 0) {
         //Reset encoder count
-        bh_reset_enc_cnt(motor);
+        Reset_Enc_Count(motor);
         //TODO: check res
     } else {
         bh_uart_tx_str((uint8_t *)"Invalid operation. Use [g/r](g=get, r=reset)\r\n");
@@ -348,7 +348,7 @@ static void handle_rot_cmd()
         goto exit;
     }
 
-    bh_rotation_dir_t rot_dir; // Left or Right
+    MOTOR_ROT_TYPE rot_dir; // Left or Right
     if (strcmp("c", token) == 0)
     {
     	rot_dir = ROT_CLOCKWISE;
@@ -381,7 +381,7 @@ static void handle_rot_cmd()
 		goto exit;
 	}
 
-	BH_Rotate_Tick_Amnt(rot_dir, ticks, speed);
+	Rotate_Mouse_By_Enc_Ticks(rot_dir, ticks, speed);
 
 exit:;
 }
@@ -397,7 +397,7 @@ static void handle_spm_cmd()
         goto exit;
     }
 
-    bh_motor_t motor_type; // Left or Right
+    MOTOR_TYPE motor_type; // Left or Right
     if (strcmp("l", token) == 0)
     {
         motor_type = MOTOR_LEFT;
@@ -426,7 +426,7 @@ static void handle_spm_cmd()
     if (res == 0)
     {
         char buf[50] = {0};
-        spin_motor_by_encoder_count(motor_type, ticks);
+        Spin_Motor_By_Enc_Ticks(motor_type, ticks);
         snprintf(buf, 50, "Set Motor to %d, Ticks: %d\r\n", motor_type, ticks);
         bh_uart_tx_str((uint8_t *)buf);
     }

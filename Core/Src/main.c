@@ -94,8 +94,8 @@ static void wait_for_start_signal();
 /* USER CODE BEGIN 0 */
 static void wait_for_start_signal(){
   while(1){
-    uint16_t fr = bh_measure_dist_avg(DIST_FR);
-    uint16_t r = bh_measure_dist_avg(DIST_R);
+    uint16_t fr = Measure_Avg_IR_Dist(DIST_FR);
+    uint16_t r = Measure_Avg_IR_Dist(DIST_R);
 
     if(fr < START_SIGNAL_DIST_FR + START_SIGNAL_DIST_RANGE && fr > START_SIGNAL_DIST_FR - START_SIGNAL_DIST_RANGE
       && r < START_SIGNAL_DIST_R + START_SIGNAL_DIST_RANGE && r > START_SIGNAL_DIST_R - START_SIGNAL_DIST_RANGE) {
@@ -555,15 +555,15 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   cli_init(&huart1);
-  bh_init(&hadc1, &htim2, &huart1, &htim3, &htim4);
+  Init(&hadc1, &htim2, &huart1, &htim3, &htim4);
 
-  bh_set_led(LED_BLUE, 1);
-  bh_set_led(LED_GREEN, 0);
-  bh_set_led(LED_RED, 1);
+  Set_LED(LED_BLUE, 1);
+  Set_LED(LED_GREEN, 0);
+  Set_LED(LED_RED, 1);
 
   //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
 
-  bh_set_led(LED_RED, 0);
+  Set_LED(LED_RED, 0);
 
   osDelay(2000);
 
@@ -574,13 +574,13 @@ void StartDefaultTask(void *argument)
 	// char hello[] = "Hello World!\r\n";
 	for(;;)
 	{
-		bh_set_led(LED_GREEN, 1);
-		bh_set_led(LED_RED, 1);
+		Set_LED(LED_GREEN, 1);
+		Set_LED(LED_RED, 1);
 
 		osDelay(2000);
 
 		//wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
-		bh_set_led(LED_RED, 0);
+		Set_LED(LED_RED, 0);
 
 		osDelay(1000);
 

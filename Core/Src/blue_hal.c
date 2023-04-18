@@ -26,9 +26,9 @@ static void ADC1_Select_CH5();
 static void ADC1_Select_CH8();
 static void ADC1_Select_CH9();
 
-
-bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle, 
-            TIM_HandleTypeDef* tim3, TIM_HandleTypeDef* tim4) {
+bool Init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle, 
+            					   TIM_HandleTypeDef* tim3, TIM_HandleTypeDef* tim4)
+{
     hadc1 = adc1;
     htim2 = tim2;
     uart_cable = uart_handle;
@@ -37,13 +37,15 @@ bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDe
     return false;
 }
 
-uint16_t bh_measure_dist(bh_dist_t dist) {
+uint16_t Measure_IR_Dist(IR_TYPE dist)
+{
     GPIO_TypeDef* emitter_port;
     uint16_t emitter_pin;
     GPIO_TypeDef* receiver_port;
     uint16_t receiver_pin;
 
-    switch(dist) {
+    switch(dist)
+    {
         case DIST_FL:
             emitter_port    = EMIT_FL_GPIO_Port;
             emitter_pin     = EMIT_FL_Pin;
@@ -51,6 +53,7 @@ uint16_t bh_measure_dist(bh_dist_t dist) {
             receiver_pin    = RECIV_FL_Pin;
             ADC1_Select_CH9();
             break;
+
         case DIST_FR:
             emitter_port    = EMIT_FR_GPIO_Port;
             emitter_pin     = EMIT_FR_Pin;
@@ -58,6 +61,7 @@ uint16_t bh_measure_dist(bh_dist_t dist) {
             receiver_pin    = RECIV_FR_Pin;
             ADC1_Select_CH4();
             break;
+
         case DIST_L:
             emitter_port    = EMIT_L_GPIO_Port;
             emitter_pin     = EMIT_L_Pin;
@@ -65,6 +69,7 @@ uint16_t bh_measure_dist(bh_dist_t dist) {
             receiver_pin    = RECIV_L_Pin;
             ADC1_Select_CH8();
             break;
+
         case DIST_R:
             emitter_port    = EMIT_R_GPIO_Port;
             emitter_pin     = EMIT_R_Pin;
@@ -72,6 +77,7 @@ uint16_t bh_measure_dist(bh_dist_t dist) {
             receiver_pin    = RECIV_R_Pin;
             ADC1_Select_CH5();
             break;
+
         default :
             /* TODO: Handle Unknown Direction */
             break;
@@ -91,7 +97,8 @@ uint16_t bh_measure_dist(bh_dist_t dist) {
     return adc_val;
 }
 
-bool bh_set_motor_dir(bh_motor_t motor, bh_motor_dir_t dir) {
+bool Set_Motor_Dir(MOTOR_TYPE motor, MOTOR_DIR_TYPE dir)
+{
     GPIO_PinState fwd_pin_state;
     GPIO_PinState back_pin_state;
 
@@ -105,41 +112,47 @@ bool bh_set_motor_dir(bh_motor_t motor, bh_motor_dir_t dir) {
             fwd_pin_state = GPIO_PIN_SET;
             back_pin_state = GPIO_PIN_RESET;
             break;
+
         case DIR_BACKWARD:
             fwd_pin_state = GPIO_PIN_RESET;
             back_pin_state = GPIO_PIN_SET;
             break;
+
         case DIR_STOP_HARD:
             /* TODO: Verify diff between HARD and SOFT stopping */
             fwd_pin_state = GPIO_PIN_RESET;
             back_pin_state = GPIO_PIN_RESET;
             break;
+
         case DIR_STOP_SOFT:
             /* TODO: Implement */
             break;
+
         default:
             break;
          /*TODO: Handle*/
 
     }
     
-    switch(motor) {
+    switch(motor)
+    {
         case MOTOR_LEFT:
             fwd_port  = ML_FWD_GPIO_Port;
             fwd_pin   = ML_FWD_Pin;
             back_port = ML_BACK_GPIO_Port;
             back_pin  = ML_BACK_Pin;
             break;
+
         case MOTOR_RIGHT:
             fwd_port  = MR_FWD_GPIO_Port;
             fwd_pin   = MR_FWD_Pin;
             back_port = MR_BACK_GPIO_Port;
             back_pin  = MR_BACK_Pin;
             break;
+
         default:
             break;
             /* TODO: Handle */
-
     }
 
     HAL_GPIO_WritePin(fwd_port, fwd_pin, fwd_pin_state);
@@ -148,78 +161,97 @@ bool bh_set_motor_dir(bh_motor_t motor, bh_motor_dir_t dir) {
     return false;
 }
 
-bool bh_set_motor_pwm(bh_motor_t motor, uint16_t dc) {
+bool Set_Motor_PWM(MOTOR_TYPE motor, uint16_t dc)
+{
     uint32_t motor_pwm_channel;
     /* Convert DC to CCR3/CCR4 value and do error checking */
-    switch(motor) {
+    switch(motor)
+    {
         case MOTOR_LEFT:
             motor_pwm_channel = TIM_CHANNEL_4;
             TIM2->CCR4 = dc;
             break;
+
         case MOTOR_RIGHT:
             motor_pwm_channel = TIM_CHANNEL_3;
             TIM2->CCR3 = dc;
             break;
     }
+
     HAL_TIM_PWM_Start(htim2, motor_pwm_channel);
 
     return false;
 }
 
-bool bh_uart_tx_str(uint8_t* buf) {
+bool bh_uart_tx_str(uint8_t* buf)
+{
     HAL_UART_Transmit(uart_cable, buf, strlen((char*)buf) + 1 , TX_TIMEOUT);
     return false;
 }
 
-bool bh_ble_tx(uint8_t *buf, uint16_t num_bytes) {
+bool bh_ble_tx(uint8_t *buf, uint16_t num_bytes)
+{
     return false;
 }
 
-bool bh_set_led(bh_led_t led, bool state) {
+bool Set_LED(bh_led_t led, bool state)
+{
     GPIO_TypeDef* led_port;
     uint16_t led_pin;
+
     switch(led) {
         case LED_GREEN:
             led_port = LED_GREEN_GPIO_Port;
             led_pin = LED_GREEN_Pin;
             break;
+
         case LED_BLUE:
             led_port = LED_BLUE_GPIO_Port;
             led_pin = LED_BLUE_Pin;
             break;
+
         case LED_RED:
             led_port = LED_RED_GPIO_Port;
             led_pin = LED_RED_Pin;
             break;
     }
+
     GPIO_PinState led_state = state ? GPIO_PIN_RESET : GPIO_PIN_SET;
-
     HAL_GPIO_WritePin(led_port, led_pin, led_state);
-    return false;
-}
-bool bh_set_buzzer(uint16_t tone, bool state) {
+
     return false;
 }
 
-uint16_t bh_get_enc_cnt(bh_motor_t motor) {
+bool bh_set_buzzer(uint16_t tone, bool state)
+{
+    return false;
+}
+
+uint16_t Get_Enc_Count(MOTOR_TYPE motor)
+{
     TIM_TypeDef* enc_TIMx;
-    if(motor == MOTOR_LEFT){
+    if(motor == MOTOR_LEFT)
+    {
         enc_TIMx = TIM3;
-    } else {
+    }
+    else
+    {
         //TODO: Error handling or a assert
         enc_TIMx = TIM4;
     }
 
-
     return enc_TIMx->CNT;
 }
 
-bool bh_reset_enc_cnt(bh_motor_t motor) {
-
+bool Reset_Enc_Count(MOTOR_TYPE motor)
+{
     TIM_TypeDef* enc_TIMx;
-    if(motor == MOTOR_LEFT){
+    if(motor == MOTOR_LEFT)
+    {
         enc_TIMx = TIM3;
-    } else {
+    }
+    else
+    {
         //TODO: Error handling or a assert
         enc_TIMx = TIM4;
     }
@@ -228,11 +260,14 @@ bool bh_reset_enc_cnt(bh_motor_t motor) {
     return true;
 }
 
-bool bh_reset_enc_cnt_to_max(bh_motor_t motor) {
+bool Reset_Enc_Count_To_Max(MOTOR_TYPE motor) {
     TIM_TypeDef* enc_TIMx;
-    if(motor == MOTOR_LEFT){
+    if(motor == MOTOR_LEFT)
+    {
         enc_TIMx = TIM3;
-    } else {
+    }
+    else
+    {
         //TODO: Error handling or a assert
         enc_TIMx = TIM4;
     }
@@ -242,17 +277,19 @@ bool bh_reset_enc_cnt_to_max(bh_motor_t motor) {
 }
 
 
-uint16_t bh_measure_dist_avg(bh_dist_t dist_sensor){
+uint16_t Measure_Avg_IR_Dist(IR_TYPE dist_sensor)
+{
     uint32_t acc = 0;
-    for(int i = 0; i < NUM_AVG_SAMPLES; ++i) {
-        acc += bh_measure_dist(dist_sensor);
+    for(int i = 0; i < NUM_AVG_SAMPLES; ++i)
+    {
+        acc += Measure_IR_Dist(dist_sensor);
     }
     return (uint16_t)(acc/NUM_AVG_SAMPLES);
 }
 
-bool BH_Rotate_Tick_Amnt(bh_rotation_dir_t dir, uint16_t encTicks, uint16_t speed)
+bool Rotate_Mouse_By_Enc_Ticks(MOTOR_ROT_TYPE dir, uint16_t encTicks, uint16_t speed)
 {
-	bh_uart_tx_str((uint8_t *)"rotating motor\r\n");
+	//bh_uart_tx_str((uint8_t *)"rotating motor\r\n");
 
 	bool firstCount = true;
 
@@ -262,34 +299,38 @@ bool BH_Rotate_Tick_Amnt(bh_rotation_dir_t dir, uint16_t encTicks, uint16_t spee
 	uint16_t curr_right_enc_count = 0;
 	uint16_t curr_left_enc_count = 0;
 
+	// set relevant motor directions and encoder count
+	// when motor spins "forward", encoder count decreases
 	if (dir == ROT_CLOCKWISE)
 	{
-		bh_reset_enc_cnt_to_max(MOTOR_LEFT);
-		bh_reset_enc_cnt(MOTOR_RIGHT);
+		Reset_Enc_Count_To_Max(MOTOR_LEFT);
+		Reset_Enc_Count(MOTOR_RIGHT);
 
-		bh_set_motor_dir(MOTOR_LEFT, DIR_FORWARD);
-		bh_set_motor_dir(MOTOR_RIGHT, DIR_BACKWARD);
+		Set_Motor_Dir(MOTOR_LEFT, DIR_FORWARD);
+		Set_Motor_Dir(MOTOR_RIGHT, DIR_BACKWARD);
 	}
 	else
 	{
-		bh_set_motor_dir(MOTOR_LEFT, DIR_BACKWARD);
-		bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
+		Set_Motor_Dir(MOTOR_LEFT, DIR_BACKWARD);
+		Set_Motor_Dir(MOTOR_RIGHT, DIR_FORWARD);
 	}
 
 	bool right_done = false;
 	bool left_done = false;
 
-	char buf[100] = {0};
+	//char buf[100] = {0};
 
-	bh_set_motor_pwm(MOTOR_LEFT, speed);
-	bh_set_motor_pwm(MOTOR_RIGHT, speed);
+
+	Set_Motor_PWM(MOTOR_LEFT, speed);
+	Set_Motor_PWM(MOTOR_RIGHT, speed);
 
 	while(!right_done || !left_done)
 	{
 		if (firstCount)
 		{
-			start_left_enc_count = bh_get_enc_cnt(MOTOR_LEFT);
-			start_right_enc_count = bh_get_enc_cnt(MOTOR_RIGHT);
+			start_left_enc_count = Get_Enc_Count(MOTOR_LEFT);
+			start_right_enc_count = Get_Enc_Count(MOTOR_RIGHT);
+
 			curr_right_enc_count = start_right_enc_count;
 			curr_left_enc_count = start_left_enc_count;
 			firstCount = false;
@@ -304,11 +345,11 @@ bool BH_Rotate_Tick_Amnt(bh_rotation_dir_t dir, uint16_t encTicks, uint16_t spee
 		{
 			if (abs(curr_right_enc_count - start_right_enc_count) < encTicks)
 			{
-				curr_right_enc_count = bh_get_enc_cnt(MOTOR_RIGHT);
+				curr_right_enc_count = Get_Enc_Count(MOTOR_RIGHT);
 			}
 			else
 			{
-				bh_set_motor_pwm(MOTOR_RIGHT, 0);
+				Set_Motor_PWM(MOTOR_RIGHT, 0);
 				right_done = true;
 			}
 		}
@@ -318,11 +359,11 @@ bool BH_Rotate_Tick_Amnt(bh_rotation_dir_t dir, uint16_t encTicks, uint16_t spee
 		{
 			if (abs(curr_left_enc_count - start_left_enc_count) < encTicks)
 			{
-				curr_left_enc_count = bh_get_enc_cnt(MOTOR_LEFT);
+				curr_left_enc_count = Get_Enc_Count(MOTOR_LEFT);
 			}
 			else
 			{
-				bh_set_motor_pwm(MOTOR_LEFT, 0);
+				Set_Motor_PWM(MOTOR_LEFT, 0);
 				left_done = true;
 			}
 		}
@@ -333,27 +374,27 @@ bool BH_Rotate_Tick_Amnt(bh_rotation_dir_t dir, uint16_t encTicks, uint16_t spee
 
 bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed)
 {
-	bh_reset_enc_cnt_to_max(MOTOR_LEFT);
-	bh_reset_enc_cnt_to_max(MOTOR_RIGHT);
+	Reset_Enc_Count_To_Max(MOTOR_LEFT);
+	Reset_Enc_Count_To_Max(MOTOR_RIGHT);
 
-	bh_set_motor_dir(MOTOR_LEFT, DIR_FORWARD);
-	bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
+	Set_Motor_Dir(MOTOR_LEFT, DIR_FORWARD);
+	Set_Motor_Dir(MOTOR_RIGHT, DIR_FORWARD);
 
-	bh_set_motor_pwm(MOTOR_LEFT, 0);
-	bh_set_motor_pwm(MOTOR_RIGHT, 0);
+	Set_Motor_PWM(MOTOR_LEFT, 0);
+	Set_Motor_PWM(MOTOR_RIGHT, 0);
 
 	float kp = 4;
 	float kd = 0.5;
 	float ki = 0.3;
 
-
 	float integral = 0;
 	float error = 0;
 	float prevError = 0;
 
-	uint16_t encRightStart = bh_get_enc_cnt(MOTOR_RIGHT);
+	uint16_t encRightStart = Get_Enc_Count(MOTOR_RIGHT);
 	uint16_t encRight = encRightStart;
-	uint16_t encLeftStart = bh_get_enc_cnt(MOTOR_LEFT);
+
+	uint16_t encLeftStart = Get_Enc_Count(MOTOR_LEFT);
 	uint16_t encLeft = encLeftStart;
 
 	uint16_t maxSpeed = 1800;
@@ -364,38 +405,32 @@ bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed)
 	}
 
 	int leftSpeed = targetSpeed;
-	int rightSpeed = targetSpeed;
-	int adjust;
+	int output;
 
-	//float currTime = 0;
-	//float lastTime = (float) clock() / CLOCKS_PER_SEC;
-
+	// buf is used for debugging
 	char buf[72] = {0};
-
-	//abs(curr_enc_count - start_enc_count) < enc_ticks
 
 	while(abs(encRightStart - encRight) < encTicks || abs(encLeftStart - encLeft) < encTicks)
 	{
 		snprintf(buf, 72, "ERR: %d, encLeft: %d, encRight: %d, lspd: %d, rspd: %d \r\n", (int)error, encLeft, encRight, leftSpeed, rightSpeed);
 		bh_uart_tx_str((uint8_t *)buf);
 
-		bh_set_motor_pwm(MOTOR_LEFT, leftSpeed);
-		bh_set_motor_pwm(MOTOR_RIGHT, targetSpeed);
+		Set_Motor_PWM(MOTOR_LEFT, leftSpeed);
+		Set_Motor_PWM(MOTOR_RIGHT, targetSpeed);
 
-		encLeft = bh_get_enc_cnt(MOTOR_LEFT);
-		encRight = bh_get_enc_cnt(MOTOR_RIGHT);
+		encLeft = Get_Enc_Count(MOTOR_LEFT);
+		encRight = Get_Enc_Count(MOTOR_RIGHT);
 
-		//currTime = (float) clock() / CLOCKS_PER_SEC;
-
-		// error
 		error = (encLeft - encRight);
 
 		integral += ki * error;
-		adjust = error * kp + (prevError - error) * kd + integral;
-		leftSpeed = targetSpeed + adjust;
+		output = error * kp + (prevError - error) * kd + integral;
 
-		//rightSpeed = rightSpeed + error;
+		// only adjust speed of one motor relative to the other
+		leftSpeed = targetSpeed + output;
 
+
+		// make sure speeds don't go crazy from
 		if (leftSpeed > maxSpeed)
 		{
 			leftSpeed = maxSpeed;
@@ -405,25 +440,16 @@ bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed)
 			leftSpeed = 0;
 		}
 
-		if (rightSpeed > maxSpeed)
-		{
-			rightSpeed = maxSpeed;
-		}
-		else if (rightSpeed < 0)
-		{
-			rightSpeed = 0;
-		}
-
 		prevError = error;
 	}
 
-	bh_set_motor_pwm(MOTOR_LEFT, 0);
-	bh_set_motor_pwm(MOTOR_RIGHT, 0);
+	Set_Motor_PWM(MOTOR_LEFT, 0);
+	Set_Motor_PWM(MOTOR_RIGHT, 0);
 
 	return 0;
 }
 
-bool spin_motor_by_encoder_count(bh_motor_t motor, uint16_t enc_ticks)
+bool Spin_Motor_By_Enc_Ticks(MOTOR_TYPE motor, uint16_t enc_ticks)
 {
 	bool firstCount = true;
 
@@ -433,23 +459,24 @@ bool spin_motor_by_encoder_count(bh_motor_t motor, uint16_t enc_ticks)
     //char buf[50] = {0};
     //snprintf(buf, 50, "start tick: %d, curr tick: %d\r\n", start_enc_count, curr_enc_count);
 
-    bh_set_motor_dir(motor, DIR_FORWARD);
-    bh_set_motor_pwm(motor, 1400);
+    Set_Motor_Dir(motor, DIR_FORWARD);
+    Set_Motor_PWM(motor, 1400);
 
     while (abs(curr_enc_count - start_enc_count) < enc_ticks || firstCount)
     {
     	if (firstCount)
     	{
-    		start_enc_count = bh_get_enc_cnt(motor);
+    		start_enc_count = Get_Enc_Count(motor);
     		firstCount = false;
     	}
+
     	//snprintf(buf, 50, "start tick: %d, curr tick: %d%d\r\n", (int)start_enc_count, (int)curr_enc_count);
     	//HAL_UART_Transmit(uart_cable, buf, strlen((char*)buf) + 1 , TX_TIMEOUT);
-        curr_enc_count = bh_get_enc_cnt(motor);
+        curr_enc_count = Get_Enc_Count(motor);
     }
 
-    bh_set_motor_dir(motor, DIR_STOP_HARD);
-    bh_set_motor_pwm(motor, 0);
+    Set_Motor_Dir(motor, DIR_STOP_HARD);
+    Set_Motor_PWM(motor, 0);
 
     return false;
 }
