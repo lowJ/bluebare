@@ -46,6 +46,7 @@ bool is_right_wall_detected(){
 #define RIGHT_BASE_SPD 1400
 #define g_P 0.2
 #define g_D 0
+
 void straight(){
     int32_t left_right_offset =  left_wall_middle - right_wall_middle;
     int32_t p_error = 0;
@@ -59,13 +60,15 @@ void straight(){
     uint16_t goal_cnt = 65535 - 680; 
 
      
-    bh_reset_enc_cnt(MOTOR_LEFT);
-    bh_reset_enc_cnt(MOTOR_RIGHT);
+    bh_reset_enc_cnt_to_max(MOTOR_LEFT);
+    bh_reset_enc_cnt_to_max(MOTOR_RIGHT);
 
     
     //while(1){
-    while(bh_get_enc_cnt(MOTOR_LEFT) > goal_cnt || bh_get_enc_cnt(MOTOR_LEFT) == 0) {
-        if(is_left_wall_detected() && is_right_wall_detected()) {
+    while(bh_get_enc_cnt(MOTOR_LEFT) > goal_cnt || bh_get_enc_cnt(MOTOR_LEFT) == 0)
+    {
+        if(is_left_wall_detected() && is_right_wall_detected())
+        {
             bool lr_diff_is_negative = false;
             int32_t lr_diff = bh_measure_dist_avg(DIST_L) - bh_measure_dist_avg(DIST_R);
             if(lr_diff < 0) lr_diff_is_negative = true;
@@ -81,20 +84,19 @@ void straight(){
 
         }
 
-
         total_error = (g_P * p_error) + (g_D * d_error);
         p_error_old = p_error;
         //Positive error = veer right, negative error = veer left
 
         bh_set_motor_pwm(MOTOR_LEFT, LEFT_BASE_SPD + total_error);
+        //bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
         bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
+
         HAL_Delay(2);
 
     }
     bh_set_motor_pwm(MOTOR_LEFT, 0);
     bh_set_motor_pwm(MOTOR_RIGHT, 0);
-
-
 
 }
 

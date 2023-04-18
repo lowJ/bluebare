@@ -213,7 +213,9 @@ uint16_t bh_get_enc_cnt(bh_motor_t motor) {
 
     return enc_TIMx->CNT;
 }
+
 bool bh_reset_enc_cnt(bh_motor_t motor) {
+
     TIM_TypeDef* enc_TIMx;
     if(motor == MOTOR_LEFT){
         enc_TIMx = TIM3;
@@ -222,9 +224,23 @@ bool bh_reset_enc_cnt(bh_motor_t motor) {
         enc_TIMx = TIM4;
     }
 
-    enc_TIMx->CNT = 0;
+	enc_TIMx->CNT = 0;
     return true;
 }
+
+bool bh_reset_enc_cnt_to_max(bh_motor_t motor) {
+    TIM_TypeDef* enc_TIMx;
+    if(motor == MOTOR_LEFT){
+        enc_TIMx = TIM3;
+    } else {
+        //TODO: Error handling or a assert
+        enc_TIMx = TIM4;
+    }
+
+    enc_TIMx->CNT = 65535;
+    return true;
+}
+
 
 uint16_t bh_measure_dist_avg(bh_dist_t dist_sensor){
     uint32_t acc = 0;
@@ -232,6 +248,210 @@ uint16_t bh_measure_dist_avg(bh_dist_t dist_sensor){
         acc += bh_measure_dist(dist_sensor);
     }
     return (uint16_t)(acc/NUM_AVG_SAMPLES);
+}
+
+bool BH_Rotate_Tick_Amnt(bh_rotation_dir_t dir, uint16_t encTicks, uint16_t speed)
+{
+	bh_uart_tx_str((uint8_t *)"rotating motor\r\n");
+
+	bool firstCount = true;
+
+	uint16_t start_right_enc_count = 0;
+	uint16_t start_left_enc_count = 0;
+
+	uint16_t curr_right_enc_count = 0;
+	uint16_t curr_left_enc_count = 0;
+
+	if (dir == ROT_CLOCKWISE)
+	{
+		bh_reset_enc_cnt_to_max(MOTOR_LEFT);
+		bh_reset_enc_cnt(MOTOR_RIGHT);
+
+		bh_set_motor_dir(MOTOR_LEFT, DIR_FORWARD);
+		bh_set_motor_dir(MOTOR_RIGHT, DIR_BACKWARD);
+	}
+	else
+	{
+		bh_set_motor_dir(MOTOR_LEFT, DIR_BACKWARD);
+		bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
+	}
+
+	bool right_done = false;
+	bool left_done = false;
+
+	char buf[100] = {0};
+
+	bh_set_motor_pwm(MOTOR_LEFT, speed);
+	bh_set_motor_pwm(MOTOR_RIGHT, speed);
+
+	while(!right_done || !left_done)
+	{
+		if (firstCount)
+		{
+			start_left_enc_count = bh_get_enc_cnt(MOTOR_LEFT);
+			start_right_enc_count = bh_get_enc_cnt(MOTOR_RIGHT);
+			curr_right_enc_count = start_right_enc_count;
+			curr_left_enc_count = start_left_enc_count;
+			firstCount = false;
+		}
+
+		//snprintf(buf, 100, "start R: %d, curr R: %d | start L: %d, curr L %d\r\n", (int)start_right_enc_count, (int)curr_right_enc_count, (int)start_left_enc_count, (int)curr_left_enc_count);
+		//bh_uart_tx_str((uint8_t *)buf);
+		//HAL_UART_Transmit(uart_cable, buf, strlen((char*)buf) + 1 , TX_TIMEOUT);
+
+		// spin right motor until encTicks is reached
+		if(!right_done)
+		{
+			if (abs(curr_right_enc_count - start_right_enc_count) < encTicks)
+			{
+				curr_right_enc_count = bh_get_enc_cnt(MOTOR_RIGHT);
+			}
+			else
+			{
+				bh_set_motor_pwm(MOTOR_RIGHT, 0);
+				right_done = true;
+			}
+		}
+
+		// spin left motor until encTicks is reached
+		if (!left_done)
+		{
+			if (abs(curr_left_enc_count - start_left_enc_count) < encTicks)
+			{
+				curr_left_enc_count = bh_get_enc_cnt(MOTOR_LEFT);
+			}
+			else
+			{
+				bh_set_motor_pwm(MOTOR_LEFT, 0);
+				left_done = true;
+			}
+		}
+	}
+
+	return 0;
+}
+
+bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed)
+{
+	bh_reset_enc_cnt_to_max(MOTOR_LEFT);
+	bh_reset_enc_cnt_to_max(MOTOR_RIGHT);
+
+	bh_set_motor_dir(MOTOR_LEFT, DIR_FORWARD);
+	bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
+
+	bh_set_motor_pwm(MOTOR_LEFT, 0);
+	bh_set_motor_pwm(MOTOR_RIGHT, 0);
+
+	float kp = 4;
+	float kd = 0.5;
+	float ki = 0.3;
+
+
+	float integral = 0;
+	float error = 0;
+	float prevError = 0;
+
+	uint16_t encRightStart = bh_get_enc_cnt(MOTOR_RIGHT);
+	uint16_t encRight = encRightStart;
+	uint16_t encLeftStart = bh_get_enc_cnt(MOTOR_LEFT);
+	uint16_t encLeft = encLeftStart;
+
+	uint16_t maxSpeed = 1800;
+
+	if (targetSpeed > maxSpeed)
+	{
+		targetSpeed = maxSpeed;
+	}
+
+	int leftSpeed = targetSpeed;
+	int rightSpeed = targetSpeed;
+	int adjust;
+
+	//float currTime = 0;
+	//float lastTime = (float) clock() / CLOCKS_PER_SEC;
+
+	char buf[72] = {0};
+
+	//abs(curr_enc_count - start_enc_count) < enc_ticks
+
+	while(abs(encRightStart - encRight) < encTicks || abs(encLeftStart - encLeft) < encTicks)
+	{
+		snprintf(buf, 72, "ERR: %d, encLeft: %d, encRight: %d, lspd: %d, rspd: %d \r\n", (int)error, encLeft, encRight, leftSpeed, rightSpeed);
+		bh_uart_tx_str((uint8_t *)buf);
+
+		bh_set_motor_pwm(MOTOR_LEFT, leftSpeed);
+		bh_set_motor_pwm(MOTOR_RIGHT, targetSpeed);
+
+		encLeft = bh_get_enc_cnt(MOTOR_LEFT);
+		encRight = bh_get_enc_cnt(MOTOR_RIGHT);
+
+		//currTime = (float) clock() / CLOCKS_PER_SEC;
+
+		// error
+		error = (encLeft - encRight);
+
+		integral += ki * error;
+		adjust = error * kp + (prevError - error) * kd + integral;
+		leftSpeed = targetSpeed + adjust;
+
+		//rightSpeed = rightSpeed + error;
+
+		if (leftSpeed > maxSpeed)
+		{
+			leftSpeed = maxSpeed;
+		}
+		else if (leftSpeed < 0)
+		{
+			leftSpeed = 0;
+		}
+
+		if (rightSpeed > maxSpeed)
+		{
+			rightSpeed = maxSpeed;
+		}
+		else if (rightSpeed < 0)
+		{
+			rightSpeed = 0;
+		}
+
+		prevError = error;
+	}
+
+	bh_set_motor_pwm(MOTOR_LEFT, 0);
+	bh_set_motor_pwm(MOTOR_RIGHT, 0);
+
+	return 0;
+}
+
+bool spin_motor_by_encoder_count(bh_motor_t motor, uint16_t enc_ticks)
+{
+	bool firstCount = true;
+
+    uint16_t start_enc_count = 0;
+    uint16_t curr_enc_count = start_enc_count;
+
+    //char buf[50] = {0};
+    //snprintf(buf, 50, "start tick: %d, curr tick: %d\r\n", start_enc_count, curr_enc_count);
+
+    bh_set_motor_dir(motor, DIR_FORWARD);
+    bh_set_motor_pwm(motor, 1400);
+
+    while (abs(curr_enc_count - start_enc_count) < enc_ticks || firstCount)
+    {
+    	if (firstCount)
+    	{
+    		start_enc_count = bh_get_enc_cnt(motor);
+    		firstCount = false;
+    	}
+    	//snprintf(buf, 50, "start tick: %d, curr tick: %d%d\r\n", (int)start_enc_count, (int)curr_enc_count);
+    	//HAL_UART_Transmit(uart_cable, buf, strlen((char*)buf) + 1 , TX_TIMEOUT);
+        curr_enc_count = bh_get_enc_cnt(motor);
+    }
+
+    bh_set_motor_dir(motor, DIR_STOP_HARD);
+    bh_set_motor_pwm(motor, 0);
+
+    return false;
 }
 
 /* Private functions ---------------------------------------------------------*/

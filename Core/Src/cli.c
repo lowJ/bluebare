@@ -29,6 +29,10 @@ static void handle_led_cmd();
 static void handle_sm_cmd();
 static void handle_dist_cmd();
 static void handle_enc_cmd();
+// -----
+static void handle_rot_cmd();
+static void handle_line_cmd();
+static void handle_spm_cmd();
 
 void cli_init(UART_HandleTypeDef* uart_handle) {
     cli_uart = uart_handle;
@@ -116,19 +120,25 @@ exit:
 
 //When calling this function, strtok must have just finished parsing the command prefix.
 static void handle_cmd_prefix(char* token) {
-        if(strcmp("hw", token) == 0) {
-            handle_hw_cmd();
-        } else if(strcmp("sm", token) == 0) {
-            handle_sm_cmd();
-        } else if(strcmp("dist", token) == 0) {
-            handle_dist_cmd();
-        } else if(strcmp("led", token) == 0) {
-            handle_led_cmd();
-        } else if(strcmp("enc", token) ==0) {
-            handle_enc_cmd();
-        } else {
-            bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
-        }
+	if(strcmp("hw", token) == 0) {
+		handle_hw_cmd();
+	} else if(strcmp("sm", token) == 0) {
+		handle_sm_cmd();
+	} else if(strcmp("dist", token) == 0) {
+		handle_dist_cmd();
+	} else if(strcmp("led", token) == 0) {
+		handle_led_cmd();
+	} else if(strcmp("enc", token) ==0) {
+		handle_enc_cmd();
+	} else if (strcmp("rot", token) == 0) {
+		handle_rot_cmd();
+	} else if (strcmp("spm", token) == 0) {
+	   handle_spm_cmd();
+	} else if (strcmp("line", token) == 0) {
+		handle_line_cmd();
+	} else {
+		bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
+	}
 }
 
 static void handle_hw_cmd() {
@@ -309,4 +319,121 @@ static void handle_enc_cmd() {
 
 exit: ;
 
+}
+
+static void handle_line_cmd()
+{
+//	const char delim[2] = " ";
+//	char *token = strtok(NULL, delim);
+//
+//	if (token == NULL)
+//	{
+//		bh_uart_tx_str((uint8_t *)"Err 1: Usage 'line'\r\n");
+//		goto exit;
+//	}
+
+	Straight_Line_Encoder_Test(350, 1400);
+
+	//exit:;
+}
+
+static void handle_rot_cmd()
+{
+    const char delim[2] = " ";
+    char *token = strtok(NULL, delim);
+
+    if (token == NULL)
+    {
+        bh_uart_tx_str((uint8_t *)"Err 1: Usage 'rot [c/cc] [ticks] (0+) [speed] (1200+)'\r\n");
+        goto exit;
+    }
+
+    bh_rotation_dir_t rot_dir; // Left or Right
+    if (strcmp("c", token) == 0)
+    {
+    	rot_dir = ROT_CLOCKWISE;
+    }
+    else if (strcmp("cc", token) == 0)
+    {
+    	rot_dir = ROT_COUNTER_CLOCKWISE;
+    }
+    else
+    {
+        bh_uart_tx_str((uint8_t *)"Invalid rotation dir. Use [c/cc]\r\n");
+        goto exit;
+    }
+
+    token = strtok(NULL, delim);
+    uint16_t ticks = (uint16_t)atoi(token);
+
+    if (token == NULL)
+    {
+        bh_uart_tx_str((uint8_t *)"Err 1: Usage 'rot2 [c/cc] [ticks] (0+) [speed] (1200+)'\r\n");
+        goto exit;
+    }
+
+    token = strtok(NULL, delim);
+	uint16_t speed = (uint16_t)atoi(token);
+
+	if (token == NULL)
+	{
+		bh_uart_tx_str((uint8_t *)"Usage 'rot4 [c/cc] [ticks] (0+) [speed] (1200+)'\r\n");
+		goto exit;
+	}
+
+	BH_Rotate_Tick_Amnt(rot_dir, ticks, speed);
+
+exit:;
+}
+
+static void handle_spm_cmd()
+{
+    const char delim[2] = " ";
+    char *token = strtok(NULL, delim);
+
+    if (token == NULL)
+    {
+        bh_uart_tx_str((uint8_t *)"Usage 'spm [l/r] [ticks] (1+)'\r\n");
+        goto exit;
+    }
+
+    bh_motor_t motor_type; // Left or Right
+    if (strcmp("l", token) == 0)
+    {
+        motor_type = MOTOR_LEFT;
+    }
+    else if (strcmp("r", token) == 0)
+    {
+        motor_type = MOTOR_RIGHT;
+    }
+    else
+    {
+        bh_uart_tx_str((uint8_t *)"Invalid motor. Use [l/r]\r\n");
+        goto exit;
+    }
+
+    token = strtok(NULL, delim);
+    uint16_t ticks = (uint16_t)atoi(token);
+
+    if (token == NULL)
+    {
+        bh_uart_tx_str((uint8_t *)"Usage 'spm [l/r] [ticks] (1+)'\r\n");
+        goto exit;
+    }
+
+    uint16_t res = 0;
+
+    if (res == 0)
+    {
+        char buf[50] = {0};
+        spin_motor_by_encoder_count(motor_type, ticks);
+        snprintf(buf, 50, "Set Motor to %d, Ticks: %d\r\n", motor_type, ticks);
+        bh_uart_tx_str((uint8_t *)buf);
+    }
+    else
+    {
+        bh_uart_tx_str((uint8_t *)"Error occured setting motor");
+    }
+
+exit:;
 }

@@ -38,6 +38,9 @@
 #define START_SIGNAL_DIST_FR 2700 /* TODO: Find value*/
 #define START_SIGNAL_DIST_R 3000 /* TODO: Find value*/
 #define START_SIGNAL_DIST_RANGE 500 /* TODO: Find value*/ 
+
+#define TICKS_FOR_90_DEGREE_TURN 232
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -93,6 +96,7 @@ static void wait_for_start_signal(){
   while(1){
     uint16_t fr = bh_measure_dist_avg(DIST_FR);
     uint16_t r = bh_measure_dist_avg(DIST_R);
+
     if(fr < START_SIGNAL_DIST_FR + START_SIGNAL_DIST_RANGE && fr > START_SIGNAL_DIST_FR - START_SIGNAL_DIST_RANGE
       && r < START_SIGNAL_DIST_R + START_SIGNAL_DIST_RANGE && r > START_SIGNAL_DIST_R - START_SIGNAL_DIST_RANGE) {
       break;
@@ -553,11 +557,11 @@ void StartDefaultTask(void *argument)
   cli_init(&huart1);
   bh_init(&hadc1, &htim2, &huart1, &htim3, &htim4);
 
-  bh_set_led(LED_BLUE, 0);
+  bh_set_led(LED_BLUE, 1);
   bh_set_led(LED_GREEN, 0);
   bh_set_led(LED_RED, 1);
 
-  wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
+  //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
 
   bh_set_led(LED_RED, 0);
 
@@ -565,23 +569,39 @@ void StartDefaultTask(void *argument)
 
   nav_init();
 
-  straight();
+  //straight();
   /* Infinite loop */
-	char hello[] = "Hello World!\r\n";
-	for(;;) {
-    bh_set_led(LED_RED, 1);
-    wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
-    bh_set_led(LED_RED, 0);
-    osDelay(2000);
-    straight();
-    //cli_update();
-    //osDelay(25);
+	// char hello[] = "Hello World!\r\n";
+	for(;;)
+	{
+		bh_set_led(LED_GREEN, 1);
+		bh_set_led(LED_RED, 1);
+
+		osDelay(2000);
+
+		//wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
+		bh_set_led(LED_RED, 0);
+
+		osDelay(1000);
+
+		// BH_Rotate_Tick_Amnt(ROT_CLOCKWISE, TICKS_FOR_90_DEGREE_TURN * 4, 1400);
+		Straight_Line_Encoder_Test(2100, 1400);
+		//straight();
+		osDelay(200);
+
+		//BH_Rotate_Tick_Amnt(ROT_CLOCKWISE, TICKS_FOR_90_DEGREE_TURN * 2, 1400);
+
+		// cli_update();
+
+		osDelay(25);
+
 		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 		// HAL_UART_Transmit(&huart2, (uint8_t*)&hello, strlen(hello), 100);
 		// osDelay(1000);
 		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 		// osDelay(1000);
 	}
+
   /* USER CODE END 5 */
 }
 

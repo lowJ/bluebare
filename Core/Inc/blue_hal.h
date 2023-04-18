@@ -11,6 +11,8 @@
 #include "stm32f1xx_hal.h"
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <time.h>
 
 typedef enum {
 	MOTOR_LEFT,
@@ -32,6 +34,11 @@ typedef enum {
 } bh_dist_t;
 
 typedef enum {
+	ROT_CLOCKWISE,
+	ROT_COUNTER_CLOCKWISE
+} bh_rotation_dir_t;
+
+typedef enum {
 	LED_RED,
 	LED_GREEN,
 	LED_BLUE
@@ -47,6 +54,10 @@ bool bh_set_led(bh_led_t led, bool state);
 bool bh_set_buzzer(uint16_t tone, bool state); /* TODO: Verify params */
 uint16_t bh_get_enc_cnt(bh_motor_t motor);
 bool bh_reset_enc_cnt(bh_motor_t motor);
+bool bh_reset_enc_cnt_to_max(bh_motor_t motor);
 uint16_t bh_measure_dist_avg(bh_dist_t dist_sensor);
+bool spin_motor_by_encoder_count(bh_motor_t motor, uint16_t enc_ticks);
+bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed);
+bool BH_Rotate_Tick_Amnt(bh_rotation_dir_t dir, uint16_t encTicks, uint16_t speed);
 
 #endif /* INC_BLUE_HAL_H_ */
