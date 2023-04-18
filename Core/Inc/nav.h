@@ -18,5 +18,6 @@ bool is_left_wall_detected();
 bool is_right_wall_detected();
 void straight();
 uint16_t cnt_per_ms(bh_motor_t motor, bh_motor_dir_t dir);
+void turn_left();
 
 #endif /* INC_NAV_H_ */

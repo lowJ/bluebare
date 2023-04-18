@@ -13,6 +13,7 @@
 
 uint16_t left_wall_middle = 0;
 uint16_t right_wall_middle = 0;
+static uint16_t cnt_per_ms_lt(uint16_t* spd_l, uint16_t* spd_r);
 
 bool nav_init() {
     left_wall_middle = bh_measure_dist_avg(DIST_L);
@@ -98,6 +99,70 @@ void straight(){
 
 }
 
+
+
+#define LEFT_TURN_L_BASE_SPD 1400
+#define LEFT_TURN_R_BASE_SPD 1450
+#define LEFT_TURN_CNT 190
+#define g_P_lt 0.2
+#define g_D_lt 0
+void turn_left(){
+    int32_t p_error = 0;
+    int32_t d_error = 0;
+    int32_t p_error_old;
+    int32_t total_error;
+
+    bh_set_motor_dir(MOTOR_LEFT, DIR_BACKWARD);
+    bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
+
+    uint16_t l_goal_cnt = LEFT_TURN_CNT; 
+    uint16_t r_goal_cnt = 65535 - LEFT_TURN_CNT; 
+
+    bh_reset_enc_cnt(MOTOR_LEFT);
+    bh_reset_enc_cnt(MOTOR_RIGHT);
+
+    uint16_t l_spd;
+    uint16_t r_spd;
+    int16_t lr_diff;
+    int16_t error;
+    while(bh_get_enc_cnt(MOTOR_LEFT) < l_goal_cnt || bh_get_enc_cnt(MOTOR_LEFT) == 0) {
+
+        cnt_per_ms_lt(&l_spd, &r_spd); //12MS delay here
+
+        lr_diff = l_spd - r_spd;
+
+        error = lr_diff * g_P_lt;
+
+        bh_set_motor_pwm(MOTOR_LEFT, LEFT_TURN_L_BASE_SPD + error);
+        bh_set_motor_pwm(MOTOR_RIGHT, LEFT_TURN_R_BASE_SPD - error);
+    }
+    bh_set_motor_pwm(MOTOR_LEFT, 0);
+    bh_set_motor_pwm(MOTOR_RIGHT, 0);
+}
+
+uint16_t cnt_per_ms_lt(uint16_t* spd_l, uint16_t* spd_r){
+    uint16_t start_cnt_l = bh_get_enc_cnt(MOTOR_LEFT);
+    uint16_t start_cnt_r = bh_get_enc_cnt(MOTOR_RIGHT);
+    HAL_Delay(12);
+    uint16_t end_cnt_l = bh_get_enc_cnt(MOTOR_LEFT);
+    uint16_t end_cnt_r = bh_get_enc_cnt(MOTOR_RIGHT);
+    //Left is backwards
+    uint16_t l_cnts;
+    if(end_cnt_l < start_cnt_l) { //Handle overflow case
+        l_cnts = ((65535-start_cnt_l)+1) + end_cnt_l;
+    } else {
+        l_cnts = end_cnt_l - start_cnt_l;
+    }
+    *spd_l = l_cnts;
+    //Right is forwards
+    uint16_t r_cnts;
+    if(end_cnt_r > start_cnt_r) { //Handle overflow case
+        r_cnts = ((65535-end_cnt_r)+1) + start_cnt_r;
+    } else {
+        r_cnts = start_cnt_r - end_cnt_r;
+    }
+    *spd_r = r_cnts;
+}
 /* Does not handle overflow*/
 uint16_t cnt_per_ms(bh_motor_t motor, bh_motor_dir_t dir){
     uint16_t start_cnt = bh_get_enc_cnt(motor);
