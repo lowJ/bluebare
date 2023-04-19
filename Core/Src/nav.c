@@ -102,10 +102,10 @@ void straight(uint16_t cells){
 
 
 
-#define LEFT_TURN_L_BASE_SPD 1400
-#define LEFT_TURN_R_BASE_SPD 1450
-#define LEFT_TURN_CNT 190
-#define g_P_lt 0.2
+#define LEFT_TURN_L_BASE_SPD 1350
+#define LEFT_TURN_R_BASE_SPD 1400
+#define LEFT_TURN_CNT 170 //227?
+#define g_P_lt 0.1
 #define g_D_lt 0
 void turn_left(){
     int32_t p_error = 0;
@@ -137,8 +137,8 @@ void turn_left(){
         bh_set_motor_pwm(MOTOR_LEFT, LEFT_TURN_L_BASE_SPD + error);
         bh_set_motor_pwm(MOTOR_RIGHT, LEFT_TURN_R_BASE_SPD - error);
     }
-    bh_set_motor_pwm(MOTOR_LEFT, 0);
-    bh_set_motor_pwm(MOTOR_RIGHT, 0);
+    bh_set_motor_dir(MOTOR_LEFT, DIR_STOP_HARD);
+    bh_set_motor_dir(MOTOR_RIGHT, DIR_STOP_HARD);
 }
 
 uint16_t cnt_per_ms_lt(uint16_t* spd_l, uint16_t* spd_r){
