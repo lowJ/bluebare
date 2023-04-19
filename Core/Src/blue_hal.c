@@ -14,6 +14,7 @@
 #define EMITTER_PULSE_TIME_MS 1/* TODO: Find Smallest Pulse Time */
 #define TX_TIMEOUT 10 /* TODO: Try makig 0*/
 #define NUM_AVG_SAMPLES 1
+#define DC_FOR_100_DC 1800
 
 /* Private variables ---------------------------------------------------------*/
 static ADC_HandleTypeDef* hadc1;
@@ -111,8 +112,8 @@ bool bh_set_motor_dir(bh_motor_t motor, bh_motor_dir_t dir) {
             break;
         case DIR_STOP_HARD:
             /* TODO: Verify diff between HARD and SOFT stopping */
-            fwd_pin_state = GPIO_PIN_RESET;
-            back_pin_state = GPIO_PIN_RESET;
+            fwd_pin_state = GPIO_PIN_SET;
+            back_pin_state = GPIO_PIN_SET;
             break;
         case DIR_STOP_SOFT:
             /* TODO: Implement */
@@ -144,6 +145,10 @@ bool bh_set_motor_dir(bh_motor_t motor, bh_motor_dir_t dir) {
 
     HAL_GPIO_WritePin(fwd_port, fwd_pin, fwd_pin_state);
     HAL_GPIO_WritePin(back_port, back_pin, back_pin_state);
+
+    if(dir == DIR_STOP_HARD) {
+        bh_set_motor_pwm(motor, DC_FOR_100_DC);
+    }
 
     return false;
 }
