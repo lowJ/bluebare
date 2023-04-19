@@ -47,7 +47,8 @@ bool is_right_wall_detected(){
 #define RIGHT_BASE_SPD 1400
 #define g_P 0.2
 #define g_D 0
-void straight(){
+#define TICKS_PER_CELL 679
+void straight(uint16_t cells){
     int32_t left_right_offset =  left_wall_middle - right_wall_middle;
     int32_t p_error = 0;
     int32_t d_error = 0;
@@ -57,7 +58,7 @@ void straight(){
     bh_set_motor_dir(MOTOR_LEFT, DIR_FORWARD);
     bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
 
-    uint16_t goal_cnt = 65535 - 680; 
+    uint16_t goal_cnt = 65535 - (cells * 680); 
 
      
     bh_reset_enc_cnt(MOTOR_LEFT);
