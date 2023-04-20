@@ -18,6 +18,27 @@ static uint16_t cnt_per_ms_lt(uint16_t* spd_l, uint16_t* spd_r);
 bool nav_init() {
     left_wall_middle = bh_measure_dist_avg(DIST_L);
     right_wall_middle = bh_measure_dist_avg(DIST_R);
+    int32_t off = left_wall_middle - right_wall_middle;
+    bh_set_led(LED_RED, 0);
+    bh_set_led(LED_GREEN, 0);
+    if(off > -1) {
+        bh_set_led(LED_GREEN, 1);
+        HAL_Delay(500);
+        bh_set_led(LED_GREEN, 0);
+        HAL_Delay(500);
+        bh_set_led(LED_GREEN, 1);
+        HAL_Delay(500);
+        bh_set_led(LED_GREEN, 0);
+    } else {
+        bh_set_led(LED_RED, 1);
+        HAL_Delay(500);
+        bh_set_led(LED_RED, 0);
+        HAL_Delay(500);
+        bh_set_led(LED_RED, 1);
+        HAL_Delay(500);
+        bh_set_led(LED_RED, 0);
+
+    }
     return true;
 }
 
@@ -43,9 +64,9 @@ bool is_right_wall_detected(){
     }
 }
 
-#define LEFT_BASE_SPD 1450
+#define LEFT_BASE_SPD 1400
 #define RIGHT_BASE_SPD 1400
-#define g_P 0.2
+#define g_P 0.3
 #define g_D 0.5         //P= 0.2
 #define TICKS_PER_CELL 679
 void straight(uint16_t cells){
@@ -75,13 +96,17 @@ void straight(uint16_t cells){
 
     
     //while(1){
-    while(bh_get_enc_cnt(MOTOR_LEFT) > goal_cnt || bh_get_enc_cnt(MOTOR_LEFT) == 0) {
-        if(true) {
-        //if(is_left_wall_detected() && is_right_wall_detected()) {
+    while(bh_get_enc_cnt(MOTOR_LEFT) > goal_cnt || bh_get_enc_cnt(MOTOR_LEFT) == 0 ||
+            bh_get_enc_cnt(MOTOR_RIGHT) > goal_cnt || bh_get_enc_cnt(MOTOR_RIGHT) == 0) {
+        //if(fal) {
+        if(bh_measure_dist_avg(DIST_FR) > 1240){
+            break;
+
+        }
+        if(is_left_wall_detected() && is_right_wall_detected()) {
             bool lr_diff_is_negative = false;
             int32_t lr_diff = bh_measure_dist_avg(DIST_L) - bh_measure_dist_avg(DIST_R);
             if(lr_diff < 0) {
-            //    lr_diff_is_negative = true;
                 p_error = abs(lr_diff) + abs(left_right_offset);
                 p_error = p_error * -1;
                 d_error = p_error - p_error_old;
@@ -90,37 +115,174 @@ void straight(uint16_t cells){
                 d_error = p_error - p_error_old;
             }
 
+            total_error = (g_P * p_error) + (g_D * d_error);
+            p_error_old = p_error;
+            //Positive error = veer right, negative error = veer left
+
+            bh_set_motor_pwm(MOTOR_LEFT, LEFT_BASE_SPD + total_error);
+            bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
+            HAL_Delay(2);
+
 
         } else if (is_left_wall_detected()) {
+            uint16_t left =  bh_measure_dist_avg(DIST_L);
+            int32_t diff = left_wall_middle - left; //diff=negative too lcose to left wall
+                                                    //diff = positive too far to left wall 
+            p_error = diff * -1;
+            //d_error = p_error - p_error_old;
+
+            total_error = (g_P * p_error);
+            
+            bh_set_motor_pwm(MOTOR_LEFT, LEFT_BASE_SPD + total_error);
+            bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
+            HAL_Delay(2);
+
 
 
         } else if (is_right_wall_detected()) {
 
+            uint16_t right =  bh_measure_dist_avg(DIST_R);
+            int32_t diff = right_wall_middle - right; //diff=negative too lcose to right wall
+                                                    //diff = positive too far to right wall 
+
+            p_error = diff;
+            total_error = (g_P * p_error);
+            
+            bh_set_motor_pwm(MOTOR_LEFT, LEFT_BASE_SPD + total_error);
+            bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
+            HAL_Delay(2);
+            //d_error = p_error - p_error_old;
 
         } else {
 
-        }
+            bh_set_motor_pwm(MOTOR_LEFT, LEFT_BASE_SPD);
+            bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD);
 
 
-        if(p_error < 0) {
-            total_error = (g_P * p_error) + (g_D * d_error);
-        } else {
-            total_error = (g_P * p_error) + (g_D * d_error);
 
         }
-        p_error_old = p_error;
-        //Positive error = veer right, negative error = veer left
 
-        bh_set_motor_pwm(MOTOR_LEFT, LEFT_BASE_SPD + total_error);
-        bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
-        HAL_Delay(2);
 
     }
+    bh_set_motor_dir(MOTOR_LEFT, DIR_STOP_HARD);
+    bh_set_motor_dir(MOTOR_RIGHT, DIR_STOP_HARD);
     bh_set_motor_pwm(MOTOR_LEFT, 0);
     bh_set_motor_pwm(MOTOR_RIGHT, 0);
 
 
 
+}
+
+void Move_One_Cell(uint16_t encTicks, uint16_t targetSpeed, uint16_t irLeftOffset, uint16_t irRightOffset)
+{
+	bool hasRightWall = (Measure_IR_Dist(DIST_R)) > 200 ? 1 : 0;
+	bool hasLeftWall = (Measure_IR_Dist(DIST_L)) > 200 ? 1 : 0;
+	bool hasFrontWall = (Measure_IR_Dist(DIST_FL)) > 200 ? 1 : 0;
+
+	Reset_Enc_Count_To_Max(MOTOR_RIGHT);
+	Reset_Enc_Count_To_Max(MOTOR_LEFT);
+
+	Set_Motor_Dir(MOTOR_RIGHT, DIR_FORWARD);
+	Set_Motor_Dir(MOTOR_LEFT, DIR_FORWARD);
+
+	Set_Motor_PWM(MOTOR_RIGHT, 0);
+	Set_Motor_PWM(MOTOR_LEFT, 0);
+
+	uint16_t encMaxTicks = 65535;
+	uint16_t encRightTicks = Get_Enc_Count(MOTOR_RIGHT);
+	uint16_t encLeftTicks = Get_Enc_Count(MOTOR_LEFT);
+	uint16_t encOffset = encLeftTicks - encRightTicks;
+
+	uint16_t irOffset = irLeftOffset - irRightOffset;
+
+	float ENC_Kp = 4;
+	float ENC_Kd = 0.5;
+	float ENC_Ki = 0.2;
+
+	float ENC_output = 0;
+	float ENC_error = 0;
+	float ENC_prev_error = 0;
+	float ENC_integral = 0;
+
+	float IR_Kp = 0.2;
+	float IR_Kd = 0;
+	float IR_Ki = 0;
+
+	float IR_output = 0;
+	float IR_error = 0;
+	float IR_prev_error = 0;
+	float IR_integral = 0;
+
+	while ((encMaxTicks - encLeftTicks) < encTicks || (encMaxTicks - encRightTicks) < encTicks)
+	{
+		encLeftTicks = Get_Enc_Count(MOTOR_LEFT);
+		encRightTicks = Get_Enc_Count(MOTOR_RIGHT);
+
+		hasRightWall = (Measure_Avg_IR_Dist(DIST_R)) > 200 ? 1 : 0;
+		hasLeftWall = (Measure_Avg_IR_Dist(DIST_L)) > 200 ? 1 : 0;
+		hasFrontWall = (Measure_Avg_IR_Dist(DIST_FL)) > 300 ? 1 : 0;
+
+		if (!(!hasRightWall && !hasLeftWall && !hasFrontWall))
+		{
+			encOffset = encLeftTicks - encRightTicks;
+		}
+
+		if (hasLeftWall && hasRightWall && !hasFrontWall)
+		{
+			IR_error = Measure_Avg_IR_Dist(DIST_L) - Measure_Avg_IR_Dist(DIST_R) - irOffset;
+
+			IR_output = IR_error * IR_Kp;
+			IR_prev_error = IR_error;
+
+			Set_Motor_PWM(MOTOR_LEFT, targetSpeed + IR_output);
+			Set_Motor_PWM(MOTOR_RIGHT, targetSpeed);
+			HAL_Delay(2);
+		}
+		else if (hasLeftWall && !hasRightWall && !hasFrontWall)
+		{
+			IR_error = Measure_Avg_IR_Dist(DIST_L) - irLeftOffset;
+
+			IR_output = IR_error * IR_Kp;
+			IR_prev_error = IR_error;
+
+			Set_Motor_PWM(MOTOR_LEFT, targetSpeed + IR_output);
+			Set_Motor_PWM(MOTOR_RIGHT, targetSpeed);
+			HAL_Delay(2);
+		}
+		else if (!hasLeftWall && hasRightWall && !hasFrontWall)
+		{
+			IR_error = Measure_Avg_IR_Dist(DIST_R) - irRightOffset;
+
+			IR_output = IR_error * IR_Kp;
+			IR_prev_error = IR_error;
+
+			Set_Motor_PWM(MOTOR_LEFT, targetSpeed - IR_output);
+			Set_Motor_PWM(MOTOR_RIGHT, targetSpeed);
+			HAL_Delay(2);
+		}
+		else if (!hasLeftWall && !hasRightWall && !hasFrontWall)
+		{
+			ENC_error = encLeftTicks - encRightTicks - encOffset;
+			ENC_integral += ENC_error * ENC_Ki;
+
+			ENC_output = ENC_error * ENC_Kp + (ENC_prev_error - ENC_error) * ENC_Kd + ENC_integral;
+			ENC_prev_error = ENC_error;
+
+			Set_Motor_PWM(MOTOR_LEFT, targetSpeed + ENC_output);
+			Set_Motor_PWM(MOTOR_RIGHT, targetSpeed);
+			HAL_Delay(2);
+		}
+		else
+		{
+			Set_Motor_PWM(MOTOR_RIGHT, 0);
+			Set_Motor_PWM(MOTOR_LEFT, 0);
+			break;
+		}
+
+	}
+
+	Set_Motor_PWM(MOTOR_RIGHT, 0);
+	Set_Motor_PWM(MOTOR_LEFT, 0);
 }
 
 #define FRONT_EMIT_GOAL_DIST 700

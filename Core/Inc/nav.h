@@ -13,7 +13,7 @@
 
 #include "blue_hal.h"
 
-#define LEFT_TURN_90_CNTS 170
+#define LEFT_TURN_90_CNTS 175
 #define LEFT_TURN_180_CNTS 340
 
 bool nav_init();

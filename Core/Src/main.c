@@ -571,18 +571,25 @@ void StartDefaultTask(void *argument)
 	char hello[] = "Hello World!\r\n";
 	for(;;) {
     
-    //bh_set_led(LED_RED, 1);
     //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
     bh_set_led(LED_RED, 0);
-    osDelay(500);
+    //osDelay(500);
     //turn_left();
     //straight(4);
 
     //wait_for_start_signal();
-    straight(4);
+    straight(1);
     //straight_till_wall();
-    osDelay(500);
-    turn_left(LEFT_TURN_180_CNTS);
+    bh_set_led(LED_RED, 1);
+    //wait_for_start_signal();
+    osDelay(1000);
+    turn_left(LEFT_TURN_90_CNTS);
+    osDelay(1000);
+    //straight(1);
+    //osDelay(1000);
+    //wait_for_start_signal();
+
+    //turn_left(LEFT_TURN_180_CNTS);
     //cli_update();
     //osDelay(25);
 
