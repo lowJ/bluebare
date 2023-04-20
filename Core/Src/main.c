@@ -578,10 +578,10 @@ void StartDefaultTask(void *argument)
     //straight(4);
 
     //wait_for_start_signal();
-    straight(1);
+    straight(6);
     //straight_till_wall();
     bh_set_led(LED_RED, 1);
-    //wait_for_start_signal();
+    wait_for_start_signal();
     osDelay(1000);
     turn_left(LEFT_TURN_90_CNTS);
     osDelay(1000);

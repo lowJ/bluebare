@@ -64,8 +64,8 @@ bool is_right_wall_detected(){
     }
 }
 
-#define LEFT_BASE_SPD 1400
-#define RIGHT_BASE_SPD 1400
+#define LEFT_BASE_SPD 1350
+#define RIGHT_BASE_SPD 1350
 #define g_P 0.3
 #define g_D 0.5         //P= 0.2
 #define TICKS_PER_CELL 679
