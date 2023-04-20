@@ -55,6 +55,8 @@ bool Spin_Motor_By_Enc_Ticks(MOTOR_TYPE motor, uint16_t enc_ticks);
 bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed);
 bool Rotate_Mouse_By_Enc_Ticks(MOTOR_ROT_TYPE dir, uint16_t encTicks, uint16_t speed);
 
+void Move_One_Cell(uint16_t encTicks, uint16_t targetSpeed, uint16_t irLeftOffset, uint16_t irRightOffset);
+
 bool Reset_Enc_Count(MOTOR_TYPE motor);
 bool Reset_Enc_Count_To_Max(MOTOR_TYPE motor);
 

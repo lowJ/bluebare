@@ -16,7 +16,7 @@ uint16_t right_wall_middle = 0;
 
 bool nav_init() {
     left_wall_middle = Measure_Avg_IR_Dist(DIST_L);
-    left_wall_middle = Measure_Avg_IR_Dist(DIST_R);
+    right_wall_middle = Measure_Avg_IR_Dist(DIST_R);
     return true;
 }
 
@@ -47,6 +47,27 @@ bool is_right_wall_detected(){
 #define g_P 0.2
 #define g_D 0
 
+void Celebrate_UCI_Demo()
+{
+//	straight();
+
+	Straight_Line_Encoder_Test(680 * 3, 1400);
+	osDelay(500);
+	Rotate_Mouse_By_Enc_Ticks(ROT_CLOCKWISE, 232 * 2, 1400);
+
+	//Straight_Line_Encoder_Test(700, 1400);
+	//osDelay(500);
+//	Straight_Line_Encoder_Test(700, 1400);
+//	Rotate_Mouse_By_Enc_Ticks(ROT_CLOCKWISE, 232, 1400);
+//	Straight_Line_Encoder_Test(700, 1400);
+//	straight();
+}
+
+void MoveStraight()
+{
+
+}
+
 void straight(){
     int32_t left_right_offset =  left_wall_middle - right_wall_middle;
     int32_t p_error = 0;
@@ -59,10 +80,8 @@ void straight(){
 
     uint16_t goal_cnt = 65535 - 680; 
 
-     
     Reset_Enc_Count_To_Max(MOTOR_LEFT);
     Reset_Enc_Count_To_Max(MOTOR_RIGHT);
-
     
     //while(1){
     while(Get_Enc_Count(MOTOR_LEFT) > goal_cnt || Get_Enc_Count(MOTOR_LEFT) == 0)
@@ -70,17 +89,36 @@ void straight(){
         if(is_left_wall_detected() && is_right_wall_detected())
         {
             bool lr_diff_is_negative = false;
+
             int32_t lr_diff = Measure_Avg_IR_Dist(DIST_L) - Measure_Avg_IR_Dist(DIST_R);
-            if(lr_diff < 0) lr_diff_is_negative = true;
+
+            if (lr_diff < 0)
+            {
+            	lr_diff_is_negative = true;
+            }
 
             p_error = abs(lr_diff) - abs(left_right_offset);
-            if(lr_diff_is_negative) p_error = p_error * -1;
+
+            if(lr_diff_is_negative)
+			{
+            	p_error = p_error * -1;
+			}
+
             d_error = p_error - p_error_old;
-        } else if (is_left_wall_detected()) {
+        }
 
-        } else if (is_right_wall_detected()) {
+        else if (is_left_wall_detected())
+        {
 
-        } else {
+        }
+
+        else if (is_right_wall_detected())
+        {
+
+        }
+
+        else
+        {
 
         }
 

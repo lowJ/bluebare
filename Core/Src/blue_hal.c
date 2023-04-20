@@ -260,7 +260,8 @@ bool Reset_Enc_Count(MOTOR_TYPE motor)
     return true;
 }
 
-bool Reset_Enc_Count_To_Max(MOTOR_TYPE motor) {
+bool Reset_Enc_Count_To_Max(MOTOR_TYPE motor)
+{
     TIM_TypeDef* enc_TIMx;
     if(motor == MOTOR_LEFT)
     {
@@ -287,10 +288,122 @@ uint16_t Measure_Avg_IR_Dist(IR_TYPE dist_sensor)
     return (uint16_t)(acc/NUM_AVG_SAMPLES);
 }
 
+void Move_One_Cell(uint16_t encTicks, uint16_t targetSpeed, uint16_t irLeftOffset, uint16_t irRightOffset)
+{
+	bool hasRightWall = (Measure_IR_Dist(DIST_R)) > 200 ? 1 : 0;
+	bool hasLeftWall = (Measure_IR_Dist(DIST_L)) > 200 ? 1 : 0;
+	bool hasFrontWall = (Measure_IR_Dist(DIST_FL)) > 200 ? 1 : 0;
+
+	Reset_Enc_Count_To_Max(MOTOR_RIGHT);
+	Reset_Enc_Count_To_Max(MOTOR_LEFT);
+
+	Set_Motor_Dir(MOTOR_RIGHT, DIR_FORWARD);
+	Set_Motor_Dir(MOTOR_LEFT, DIR_FORWARD);
+
+	Set_Motor_PWM(MOTOR_RIGHT, 0);
+	Set_Motor_PWM(MOTOR_LEFT, 0);
+
+	uint16_t encMaxTicks = 65535;
+	uint16_t encRightTicks = Get_Enc_Count(MOTOR_RIGHT);
+	uint16_t encLeftTicks = Get_Enc_Count(MOTOR_LEFT);
+	uint16_t encOffset = encLeftTicks - encRightTicks;
+
+	uint16_t irOffset = irLeftOffset - irRightOffset;
+
+	float ENC_Kp = 4;
+	float ENC_Kd = 0.5;
+	float ENC_Ki = 0.2;
+
+	float ENC_output = 0;
+	float ENC_error = 0;
+	float ENC_prev_error = 0;
+	float ENC_integral = 0;
+
+	float IR_Kp = 0.2;
+	float IR_Kd = 0;
+	float IR_Ki = 0;
+
+	float IR_output = 0;
+	float IR_error = 0;
+	float IR_prev_error = 0;
+	float IR_integral = 0;
+
+	while ((encMaxTicks - encLeftTicks) < encTicks || (encMaxTicks - encRightTicks) < encTicks)
+	{
+		encLeftTicks = Get_Enc_Count(MOTOR_LEFT);
+		encRightTicks = Get_Enc_Count(MOTOR_RIGHT);
+
+		hasRightWall = (Measure_Avg_IR_Dist(DIST_R)) > 200 ? 1 : 0;
+		hasLeftWall = (Measure_Avg_IR_Dist(DIST_L)) > 200 ? 1 : 0;
+		hasFrontWall = (Measure_Avg_IR_Dist(DIST_FL)) > 300 ? 1 : 0;
+
+		if (!(!hasRightWall && !hasLeftWall && !hasFrontWall))
+		{
+			encOffset = encLeftTicks - encRightTicks;
+		}
+
+		if (hasLeftWall && hasRightWall && !hasFrontWall)
+		{
+			IR_error = Measure_Avg_IR_Dist(DIST_L) - Measure_Avg_IR_Dist(DIST_R) - irOffset;
+
+			IR_output = IR_error * IR_Kp;
+			IR_prev_error = IR_error;
+
+			Set_Motor_PWM(MOTOR_LEFT, targetSpeed + IR_output);
+			Set_Motor_PWM(MOTOR_RIGHT, targetSpeed);
+			HAL_Delay(2);
+		}
+		else if (hasLeftWall && !hasRightWall && !hasFrontWall)
+		{
+			IR_error = Measure_Avg_IR_Dist(DIST_L) - irLeftOffset;
+
+			IR_output = IR_error * IR_Kp;
+			IR_prev_error = IR_error;
+
+			Set_Motor_PWM(MOTOR_LEFT, targetSpeed + IR_output);
+			Set_Motor_PWM(MOTOR_RIGHT, targetSpeed);
+			HAL_Delay(2);
+		}
+		else if (!hasLeftWall && hasRightWall && !hasFrontWall)
+		{
+			IR_error = Measure_Avg_IR_Dist(DIST_R) - irRightOffset;
+
+			IR_output = IR_error * IR_Kp;
+			IR_prev_error = IR_error;
+
+			Set_Motor_PWM(MOTOR_LEFT, targetSpeed - IR_output);
+			Set_Motor_PWM(MOTOR_RIGHT, targetSpeed);
+			HAL_Delay(2);
+		}
+		else if (!hasLeftWall && !hasRightWall && !hasFrontWall)
+		{
+			ENC_error = encLeftTicks - encRightTicks - encOffset;
+			ENC_integral += ENC_error * ENC_Ki;
+
+			ENC_output = ENC_error * ENC_Kp + (ENC_prev_error - ENC_error) * ENC_Kd + ENC_integral;
+			ENC_prev_error = ENC_error;
+
+			Set_Motor_PWM(MOTOR_LEFT, targetSpeed + ENC_output);
+			Set_Motor_PWM(MOTOR_RIGHT, targetSpeed);
+			HAL_Delay(2);
+		}
+		else
+		{
+			Set_Motor_PWM(MOTOR_RIGHT, 0);
+			Set_Motor_PWM(MOTOR_LEFT, 0);
+			break;
+		}
+
+	}
+
+	Set_Motor_PWM(MOTOR_RIGHT, 0);
+	Set_Motor_PWM(MOTOR_LEFT, 0);
+}
+
+
 bool Rotate_Mouse_By_Enc_Ticks(MOTOR_ROT_TYPE dir, uint16_t encTicks, uint16_t speed)
 {
 	//bh_uart_tx_str((uint8_t *)"rotating motor\r\n");
-
 	bool firstCount = true;
 
 	uint16_t start_right_enc_count = 0;
@@ -319,7 +432,6 @@ bool Rotate_Mouse_By_Enc_Ticks(MOTOR_ROT_TYPE dir, uint16_t encTicks, uint16_t s
 	bool left_done = false;
 
 	//char buf[100] = {0};
-
 
 	Set_Motor_PWM(MOTOR_LEFT, speed);
 	Set_Motor_PWM(MOTOR_RIGHT, speed);
@@ -385,7 +497,7 @@ bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed)
 
 	float kp = 4;
 	float kd = 0.5;
-	float ki = 0.3;
+	float ki = 0.2;
 
 	float integral = 0;
 	float error = 0;
@@ -412,7 +524,7 @@ bool Straight_Line_Encoder_Test(uint16_t encTicks, uint16_t targetSpeed)
 
 	while(abs(encRightStart - encRight) < encTicks || abs(encLeftStart - encLeft) < encTicks)
 	{
-		snprintf(buf, 72, "ERR: %d, encLeft: %d, encRight: %d, lspd: %d, rspd: %d \r\n", (int)error, encLeft, encRight, leftSpeed, rightSpeed);
+		snprintf(buf, 72, "ERR: %d, encLeft: %d, encRight: %d, lspd: %d, rspd: %d \r\n", (int)error, encLeft, encRight, leftSpeed, targetSpeed);
 		bh_uart_tx_str((uint8_t *)buf);
 
 		Set_Motor_PWM(MOTOR_LEFT, leftSpeed);

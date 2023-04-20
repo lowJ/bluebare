@@ -1,4 +1,6 @@
 ../Core/Src/nav.c:17:6:nav_init	8	static
 ../Core/Src/nav.c:23:6:is_left_wall_detected	16	static
 ../Core/Src/nav.c:34:6:is_right_wall_detected	16	static
-../Core/Src/nav.c:50:6:straight	48	static
+../Core/Src/nav.c:50:6:Celebrate_UCI_Demo	8	static
+../Core/Src/nav.c:66:6:MoveStraight	4	static
+../Core/Src/nav.c:71:6:straight	48	static

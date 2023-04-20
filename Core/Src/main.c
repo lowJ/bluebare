@@ -35,8 +35,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define START_SIGNAL_DIST_FR 2700 /* TODO: Find value*/
-#define START_SIGNAL_DIST_R 3000 /* TODO: Find value*/
+#define START_SIGNAL_DIST_FR 3000 /* TODO: Find value*/
+#define START_SIGNAL_DIST_R 1500 /* TODO: Find value*/
 #define START_SIGNAL_DIST_RANGE 500 /* TODO: Find value*/ 
 
 #define TICKS_FOR_90_DEGREE_TURN 232
@@ -558,42 +558,44 @@ void StartDefaultTask(void *argument)
   Init(&hadc1, &htim2, &huart1, &htim3, &htim4);
 
   Set_LED(LED_BLUE, 1);
-  Set_LED(LED_GREEN, 0);
+  Set_LED(LED_GREEN, 1);
   Set_LED(LED_RED, 1);
 
-  //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
+  //nav_init();
 
-  Set_LED(LED_RED, 0);
-
-  osDelay(2000);
-
-  nav_init();
+  uint16_t left_wall_middle = Measure_Avg_IR_Dist(DIST_L);
+  uint16_t right_wall_middle = Measure_Avg_IR_Dist(DIST_R);
 
   //straight();
   /* Infinite loop */
+	 /* Blocking */ //TODO: Figure out dist measurements
 	// char hello[] = "Hello World!\r\n";
 	for(;;)
 	{
-		Set_LED(LED_GREEN, 1);
+		osDelay(25);
+
+		//Set_LED(LED_GREEN, 1);
 		Set_LED(LED_RED, 1);
 
-		osDelay(2000);
+		wait_for_start_signal();
 
-		//wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
 		Set_LED(LED_RED, 0);
 
 		osDelay(1000);
+		//straight();
+
+		Move_One_Cell(680 * 4, 1400, left_wall_middle, right_wall_middle);
+		//Celebrate_UCI_Demo();
 
 		// BH_Rotate_Tick_Amnt(ROT_CLOCKWISE, TICKS_FOR_90_DEGREE_TURN * 4, 1400);
-		Straight_Line_Encoder_Test(2100, 1400);
+		//Straight_Line_Encoder_Test(680 * 3, 1400);
 		//straight();
-		osDelay(200);
 
 		//BH_Rotate_Tick_Amnt(ROT_CLOCKWISE, TICKS_FOR_90_DEGREE_TURN * 2, 1400);
 
 		// cli_update();
 
-		osDelay(25);
+		//osDelay(25);
 
 		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 		// HAL_UART_Transmit(&huart2, (uint8_t*)&hello, strlen(hello), 100);
