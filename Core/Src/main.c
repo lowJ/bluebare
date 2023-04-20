@@ -35,9 +35,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define START_SIGNAL_DIST_FR 2700 /* TODO: Find value*/
-#define START_SIGNAL_DIST_R 3000 /* TODO: Find value*/
+#define START_SIGNAL_DIST_FR 3000 /* TODO: Find value*/
+#define START_SIGNAL_DIST_R 1500/* TODO: Find value*/
 #define START_SIGNAL_DIST_RANGE 500 /* TODO: Find value*/ 
+#define DC_FOR_100_DC 1800
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -565,17 +566,26 @@ void StartDefaultTask(void *argument)
 
   nav_init();
 
-  straight();
+  //straight();
   /* Infinite loop */
 	char hello[] = "Hello World!\r\n";
 	for(;;) {
-    bh_set_led(LED_RED, 1);
-    wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
+    
+    //bh_set_led(LED_RED, 1);
+    //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
     bh_set_led(LED_RED, 0);
-    osDelay(2000);
-    straight();
+    osDelay(500);
+    //turn_left();
+    //straight(4);
+
+    //wait_for_start_signal();
+    straight(4);
+    //straight_till_wall();
+    osDelay(500);
+    turn_left(LEFT_TURN_180_CNTS);
     //cli_update();
     //osDelay(25);
+
 		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 		// HAL_UART_Transmit(&huart2, (uint8_t*)&hello, strlen(hello), 100);
 		// osDelay(1000);

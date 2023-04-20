@@ -17,7 +17,7 @@ static uint16_t cnt_per_ms_lt(uint16_t* spd_l, uint16_t* spd_r);
 
 bool nav_init() {
     left_wall_middle = bh_measure_dist_avg(DIST_L);
-    left_wall_middle = bh_measure_dist_avg(DIST_R);
+    right_wall_middle = bh_measure_dist_avg(DIST_R);
     return true;
 }
 
@@ -46,7 +46,7 @@ bool is_right_wall_detected(){
 #define LEFT_BASE_SPD 1450
 #define RIGHT_BASE_SPD 1400
 #define g_P 0.2
-#define g_D 0
+#define g_D 0.5         //P= 0.2
 #define TICKS_PER_CELL 679
 void straight(uint16_t cells){
     int32_t left_right_offset =  left_wall_middle - right_wall_middle;
@@ -54,6 +54,15 @@ void straight(uint16_t cells){
     int32_t d_error = 0;
     int32_t p_error_old;
     int32_t total_error;
+
+    bh_set_led(LED_BLUE, 0);
+    bh_set_led(LED_GREEN, 0);
+
+    if(left_right_offset > -1){
+        bh_set_led(LED_GREEN, 1);
+    } else {
+        bh_set_led(LED_BLUE, 1);
+    }
 
     bh_set_motor_dir(MOTOR_LEFT, DIR_FORWARD);
     bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
@@ -67,6 +76,70 @@ void straight(uint16_t cells){
     
     //while(1){
     while(bh_get_enc_cnt(MOTOR_LEFT) > goal_cnt || bh_get_enc_cnt(MOTOR_LEFT) == 0) {
+        if(true) {
+        //if(is_left_wall_detected() && is_right_wall_detected()) {
+            bool lr_diff_is_negative = false;
+            int32_t lr_diff = bh_measure_dist_avg(DIST_L) - bh_measure_dist_avg(DIST_R);
+            if(lr_diff < 0) {
+            //    lr_diff_is_negative = true;
+                p_error = abs(lr_diff) + abs(left_right_offset);
+                p_error = p_error * -1;
+                d_error = p_error - p_error_old;
+            } else {
+                p_error = abs(lr_diff) - abs(left_right_offset);
+                d_error = p_error - p_error_old;
+            }
+
+
+        } else if (is_left_wall_detected()) {
+
+
+        } else if (is_right_wall_detected()) {
+
+
+        } else {
+
+        }
+
+
+        if(p_error < 0) {
+            total_error = (g_P * p_error) + (g_D * d_error);
+        } else {
+            total_error = (g_P * p_error) + (g_D * d_error);
+
+        }
+        p_error_old = p_error;
+        //Positive error = veer right, negative error = veer left
+
+        bh_set_motor_pwm(MOTOR_LEFT, LEFT_BASE_SPD + total_error);
+        bh_set_motor_pwm(MOTOR_RIGHT, RIGHT_BASE_SPD - total_error);
+        HAL_Delay(2);
+
+    }
+    bh_set_motor_pwm(MOTOR_LEFT, 0);
+    bh_set_motor_pwm(MOTOR_RIGHT, 0);
+
+
+
+}
+
+#define FRONT_EMIT_GOAL_DIST 700
+void straight_till_wall(){
+    int32_t left_right_offset =  left_wall_middle - right_wall_middle;
+    int32_t p_error = 0;
+    int32_t d_error = 0;
+    int32_t p_error_old;
+    int32_t total_error;
+
+    bh_set_motor_dir(MOTOR_LEFT, DIR_FORWARD);
+    bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
+
+    bh_reset_enc_cnt(MOTOR_LEFT);
+    bh_reset_enc_cnt(MOTOR_RIGHT);
+
+    
+    //while(1){
+    while(bh_measure_dist_avg(DIST_FR) < FRONT_EMIT_GOAL_DIST) {
         if(is_left_wall_detected() && is_right_wall_detected()) {
             bool lr_diff_is_negative = false;
             int32_t lr_diff = bh_measure_dist_avg(DIST_L) - bh_measure_dist_avg(DIST_R);
@@ -101,13 +174,12 @@ void straight(uint16_t cells){
 }
 
 
-
 #define LEFT_TURN_L_BASE_SPD 1350
 #define LEFT_TURN_R_BASE_SPD 1400
 #define LEFT_TURN_CNT 170 //227?
 #define g_P_lt 0.1
 #define g_D_lt 0
-void turn_left(){
+void turn_left(uint16_t cnts){
     int32_t p_error = 0;
     int32_t d_error = 0;
     int32_t p_error_old;
@@ -116,8 +188,8 @@ void turn_left(){
     bh_set_motor_dir(MOTOR_LEFT, DIR_BACKWARD);
     bh_set_motor_dir(MOTOR_RIGHT, DIR_FORWARD);
 
-    uint16_t l_goal_cnt = LEFT_TURN_CNT; 
-    uint16_t r_goal_cnt = 65535 - LEFT_TURN_CNT; 
+    uint16_t l_goal_cnt = cnts; 
+    uint16_t r_goal_cnt = 65535 - cnts; 
 
     bh_reset_enc_cnt(MOTOR_LEFT);
     bh_reset_enc_cnt(MOTOR_RIGHT);
