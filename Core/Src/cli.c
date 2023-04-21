@@ -31,6 +31,8 @@ static void handle_sm_cmd();
 static void handle_dist_cmd();
 static void handle_enc_cmd();
 static void handle_spd_cmd();
+static void handle_straight_cmd();
+static void handle_leftturn_cmd();
 
 void cli_init(UART_HandleTypeDef* uart_handle) {
     cli_uart = uart_handle;
@@ -130,6 +132,10 @@ static void handle_cmd_prefix(char* token) {
             handle_enc_cmd();
         } else if(strcmp("spd", token) ==0) {
             handle_spd_cmd();
+        } else if(strcmp("str", token) ==0) {
+            handle_straight_cmd();
+        } else if(strcmp("lt", token) ==0) {
+            handle_leftturn_cmd();
         } else {
             bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
         }
@@ -361,4 +367,13 @@ static void handle_spd_cmd() {
     }
 
 exit: ;
+}
+
+static void handle_leftturn_cmd(){
+    turn_left(LEFT_TURN_90_CNTS);
+
+}
+
+static void handle_straight_cmd() {
+    straight(4);
 }
