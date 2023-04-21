@@ -6,6 +6,7 @@
 #include "cmsis_os.h"
 #include "cli.h"
 #include "blue_hal.h"
+#include "nav.h"
 
 #define CLI_CMD_BUF_SIZE 30
 
@@ -33,6 +34,7 @@ static void handle_enc_cmd();
 static void handle_rot_cmd();
 static void handle_line_cmd();
 static void handle_spm_cmd();
+static void handle_demo_cmd();
 
 void cli_init(UART_HandleTypeDef* uart_handle) {
     cli_uart = uart_handle;
@@ -136,6 +138,8 @@ static void handle_cmd_prefix(char* token) {
 	   handle_spm_cmd();
 	} else if (strcmp("line", token) == 0) {
 		handle_line_cmd();
+	} else if (strcmp("go", token) == 0) {
+		handle_demo_cmd();
 	} else {
 		bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
 	}
@@ -436,4 +440,10 @@ static void handle_spm_cmd()
     }
 
 exit:;
+}
+
+static void handle_demo_cmd(){
+   Celebrate_UCI_Demo(0, 0);
+
+
 }

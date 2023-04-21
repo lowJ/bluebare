@@ -49,6 +49,8 @@ bool is_right_wall_detected(){
 
 void Celebrate_UCI_Demo(uint16_t irLeftOffset, uint16_t irRightOffset)
 {
+    irLeftOffset = left_wall_middle;
+    irRightOffset = right_wall_middle;
 	Move_One_Cell(680 * 3, 1400, irLeftOffset, irRightOffset);
 	osDelay(500);
 	Rotate_Mouse_By_Enc_Ticks(ROT_CLOCKWISE, 222, 1400);

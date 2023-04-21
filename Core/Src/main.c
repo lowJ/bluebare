@@ -467,7 +467,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -561,10 +561,11 @@ void StartDefaultTask(void *argument)
   //Set_LED(LED_GREEN, 1);
   //Set_LED(LED_RED, 1);
 
-  //nav_init();
+  osDelay(2000);
+  nav_init();
 
-  uint16_t left_wall_middle = Measure_Avg_IR_Dist(DIST_L);
-  uint16_t right_wall_middle = Measure_Avg_IR_Dist(DIST_R);
+  //uint16_t left_wall_middle = Measure_Avg_IR_Dist(DIST_L);
+  //uint16_t right_wall_middle = Measure_Avg_IR_Dist(DIST_R);
 
   //straight();
   /* Infinite loop */
@@ -572,20 +573,21 @@ void StartDefaultTask(void *argument)
 	// char hello[] = "Hello World!\r\n";
 	for(;;)
 	{
+    cli_update();
 		osDelay(25);
 
 		//Set_LED(LED_GREEN, 1);
-		Set_LED(LED_RED, 1);
+		//Set_LED(LED_RED, 1);
 
-		wait_for_start_signal();
+		//wait_for_start_signal();
 
-		Set_LED(LED_RED, 0);
+		//Set_LED(LED_RED, 0);
 
-		osDelay(1000);
+		//osDelay(1000);
 		//straight();
 
 		//Move_One_Cell(680 * 4, 1400, left_wall_middle, right_wall_middle);
-		Celebrate_UCI_Demo(left_wall_middle, right_wall_middle);
+		//Celebrate_UCI_Demo(left_wall_middle, right_wall_middle);
 
 		// BH_Rotate_Tick_Amnt(ROT_CLOCKWISE, TICKS_FOR_90_DEGREE_TURN * 4, 1400);
 		//Straight_Line_Encoder_Test(680 * 3, 1400);
