@@ -47,13 +47,24 @@ bool is_right_wall_detected(){
 #define g_P 0.2
 #define g_D 0
 
-void Celebrate_UCI_Demo()
+void Celebrate_UCI_Demo(uint16_t irLeftOffset, uint16_t irRightOffset)
 {
-//	straight();
-
-	Straight_Line_Encoder_Test(680 * 3, 1400);
+	Move_One_Cell(680 * 3, 1400, irLeftOffset, irRightOffset);
 	osDelay(500);
-	Rotate_Mouse_By_Enc_Ticks(ROT_CLOCKWISE, 232 * 2, 1400);
+	Rotate_Mouse_By_Enc_Ticks(ROT_CLOCKWISE, 222, 1400);
+	osDelay(500);
+	Move_One_Cell(680 * 1, 1400, irLeftOffset, irRightOffset);
+	osDelay(500);
+	Rotate_Mouse_By_Enc_Ticks(ROT_CLOCKWISE, 222, 1400);
+	osDelay(500);
+
+	Move_One_Cell(680 * 3, 1400, irLeftOffset, irRightOffset);
+	osDelay(500);
+	Rotate_Mouse_By_Enc_Ticks(ROT_CLOCKWISE, 222, 1400);
+	osDelay(500);
+	Move_One_Cell(680 * 1, 1400, irLeftOffset, irRightOffset);
+	osDelay(500);
+	Rotate_Mouse_By_Enc_Ticks(ROT_CLOCKWISE, 222, 1400);
 
 	//Straight_Line_Encoder_Test(700, 1400);
 	//osDelay(500);

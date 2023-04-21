@@ -11,10 +11,10 @@
 ../Core/Src/blue_hal.c:263:6:Reset_Enc_Count_To_Max	24	static
 ../Core/Src/blue_hal.c:281:10:Measure_Avg_IR_Dist	24	static
 ../Core/Src/blue_hal.c:291:6:Move_One_Cell	96	static
-../Core/Src/blue_hal.c:404:6:Rotate_Mouse_By_Enc_Ticks	32	static
-../Core/Src/blue_hal.c:487:6:Straight_Line_Encoder_Test	160	static
-../Core/Src/blue_hal.c:564:6:Spin_Motor_By_Enc_Ticks	24	static
-../Core/Src/blue_hal.c:597:13:ADC1_Select_CH4	24	static
-../Core/Src/blue_hal.c:609:13:ADC1_Select_CH5	24	static
-../Core/Src/blue_hal.c:621:13:ADC1_Select_CH8	24	static
-../Core/Src/blue_hal.c:633:13:ADC1_Select_CH9	24	static
+../Core/Src/blue_hal.c:414:6:Rotate_Mouse_By_Enc_Ticks	32	static
+../Core/Src/blue_hal.c:497:6:Straight_Line_Encoder_Test	160	static
+../Core/Src/blue_hal.c:574:6:Spin_Motor_By_Enc_Ticks	24	static
+../Core/Src/blue_hal.c:607:13:ADC1_Select_CH4	24	static
+../Core/Src/blue_hal.c:619:13:ADC1_Select_CH5	24	static
+../Core/Src/blue_hal.c:631:13:ADC1_Select_CH8	24	static
+../Core/Src/blue_hal.c:643:13:ADC1_Select_CH9	24	static

@@ -319,7 +319,7 @@ void Move_One_Cell(uint16_t encTicks, uint16_t targetSpeed, uint16_t irLeftOffse
 	float ENC_prev_error = 0;
 	float ENC_integral = 0;
 
-	float IR_Kp = 0.2;
+	float IR_Kp = 0.3;
 	float IR_Kd = 0;
 	float IR_Ki = 0;
 
@@ -335,7 +335,17 @@ void Move_One_Cell(uint16_t encTicks, uint16_t targetSpeed, uint16_t irLeftOffse
 
 		hasRightWall = (Measure_Avg_IR_Dist(DIST_R)) > 200 ? 1 : 0;
 		hasLeftWall = (Measure_Avg_IR_Dist(DIST_L)) > 200 ? 1 : 0;
-		hasFrontWall = (Measure_Avg_IR_Dist(DIST_FL)) > 300 ? 1 : 0;
+		hasFrontWall = (Measure_Avg_IR_Dist(DIST_FR)) > 1200 ? 1 : 0;
+
+		if(hasFrontWall)
+		{
+			Set_LED(LED_GREEN, 1);
+			break;
+		}
+		else
+		{
+			Set_LED(LED_GREEN, 0);
+		}
 
 		if (!(!hasRightWall && !hasLeftWall && !hasFrontWall))
 		{

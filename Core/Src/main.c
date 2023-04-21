@@ -557,9 +557,9 @@ void StartDefaultTask(void *argument)
   cli_init(&huart1);
   Init(&hadc1, &htim2, &huart1, &htim3, &htim4);
 
-  Set_LED(LED_BLUE, 1);
-  Set_LED(LED_GREEN, 1);
-  Set_LED(LED_RED, 1);
+  //Set_LED(LED_BLUE, 1);
+  //Set_LED(LED_GREEN, 1);
+  //Set_LED(LED_RED, 1);
 
   //nav_init();
 
@@ -584,8 +584,8 @@ void StartDefaultTask(void *argument)
 		osDelay(1000);
 		//straight();
 
-		Move_One_Cell(680 * 4, 1400, left_wall_middle, right_wall_middle);
-		//Celebrate_UCI_Demo();
+		//Move_One_Cell(680 * 4, 1400, left_wall_middle, right_wall_middle);
+		Celebrate_UCI_Demo(left_wall_middle, right_wall_middle);
 
 		// BH_Rotate_Tick_Amnt(ROT_CLOCKWISE, TICKS_FOR_90_DEGREE_TURN * 4, 1400);
 		//Straight_Line_Encoder_Test(680 * 3, 1400);
