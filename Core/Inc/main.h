@@ -61,10 +61,10 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define OB_LED_Pin GPIO_PIN_13
 #define OB_LED_GPIO_Port GPIOC
-#define BUZZER_Pin GPIO_PIN_0
-#define BUZZER_GPIO_Port GPIOA
-#define V_METER_Pin GPIO_PIN_1
-#define V_METER_GPIO_Port GPIOA
+#define GYRO_VREF_Pin GPIO_PIN_0
+#define GYRO_VREF_GPIO_Port GPIOA
+#define GYRO_OUTZ_Pin GPIO_PIN_1
+#define GYRO_OUTZ_GPIO_Port GPIOA
 #define ML_SPD_Pin GPIO_PIN_2
 #define ML_SPD_GPIO_Port GPIOA
 #define MR_SPD_Pin GPIO_PIN_3

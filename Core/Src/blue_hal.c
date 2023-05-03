@@ -18,6 +18,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 static ADC_HandleTypeDef* hadc1;
+static ADC_HandleTypeDef* hadc2;
 static TIM_HandleTypeDef* htim2;
 static UART_HandleTypeDef* uart_cable;
 
@@ -26,11 +27,14 @@ static void ADC1_Select_CH4();
 static void ADC1_Select_CH5();
 static void ADC1_Select_CH8();
 static void ADC1_Select_CH9();
+static void ADC2_Select_CH0();
+static void ADC2_Select_CH1();
 
 
 bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle, 
-            TIM_HandleTypeDef* tim3, TIM_HandleTypeDef* tim4) {
+            TIM_HandleTypeDef* tim3, TIM_HandleTypeDef* tim4, ADC_HandleTypeDef* adc2) {
     hadc1 = adc1;
+    hadc2 = adc2;
     htim2 = tim2;
     uart_cable = uart_handle;
     HAL_TIM_Encoder_Start(tim4, TIM_CHANNEL_ALL);
@@ -239,6 +243,28 @@ uint16_t bh_measure_dist_avg(bh_dist_t dist_sensor){
     return (uint16_t)(acc/NUM_AVG_SAMPLES);
 }
 
+uint16_t bh_measure_gyro_outz(){
+    ADC2_Select_CH1();
+    HAL_ADC_Start(hadc2);
+    HAL_ADC_PollForConversion(hadc2, HAL_MAX_DELAY);
+
+    uint16_t adc_val = HAL_ADC_GetValue(hadc2);
+
+    HAL_ADC_Stop(hadc2);
+    return adc_val;
+}
+
+uint16_t bh_measure_gyro_vref(){
+    ADC2_Select_CH0();
+    HAL_ADC_Start(hadc2);
+    HAL_ADC_PollForConversion(hadc2, HAL_MAX_DELAY);
+
+    uint16_t adc_val = HAL_ADC_GetValue(hadc2);
+
+    HAL_ADC_Stop(hadc2);
+    return adc_val;
+}
+
 /* Private functions ---------------------------------------------------------*/
 static void ADC1_Select_CH4(void) {
   	ADC_ChannelConfTypeDef sConfig = {0};
@@ -283,6 +309,30 @@ static void ADC1_Select_CH9(void) {
   	sConfig.Rank = 1;
   	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
   	if (HAL_ADC_ConfigChannel(hadc1, &sConfig) != HAL_OK)
+  	{
+  		Error_Handler();
+  	}
+}
+
+static void ADC2_Select_CH0() {
+  	ADC_ChannelConfTypeDef sConfig = {0};
+
+  	sConfig.Channel = ADC_CHANNEL_0;
+  	sConfig.Rank = 1;
+  	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
+  	if (HAL_ADC_ConfigChannel(hadc2, &sConfig) != HAL_OK)
+  	{
+  		Error_Handler();
+  	}
+}
+
+static void ADC2_Select_CH1() {
+  	ADC_ChannelConfTypeDef sConfig = {0};
+
+  	sConfig.Channel = ADC_CHANNEL_1;
+  	sConfig.Rank = 1;
+  	sConfig.SamplingTime = ADC_SAMPLETIME_7CYCLES_5;
+  	if (HAL_ADC_ConfigChannel(hadc2, &sConfig) != HAL_OK)
   	{
   		Error_Handler();
   	}

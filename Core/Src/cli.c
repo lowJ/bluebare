@@ -33,6 +33,7 @@ static void handle_enc_cmd();
 static void handle_spd_cmd();
 static void handle_straight_cmd();
 static void handle_leftturn_cmd();
+static void handle_gyro_cmd();
 
 void cli_init(UART_HandleTypeDef* uart_handle) {
     cli_uart = uart_handle;
@@ -136,6 +137,8 @@ static void handle_cmd_prefix(char* token) {
             handle_straight_cmd();
         } else if(strcmp("lt", token) ==0) {
             handle_leftturn_cmd();
+        } else if(strcmp("gyro", token) ==0) {
+            handle_gyro_cmd();
         } else {
             bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
         }
@@ -376,4 +379,31 @@ static void handle_leftturn_cmd(){
 
 static void handle_straight_cmd() {
     straight(4);
+}
+
+static void handle_gyro_cmd() {
+    const char delim[2] = " ";
+    char* token = strtok(NULL, delim);
+
+    if(token == NULL) {
+        bh_uart_tx_str((uint8_t *)"Usage 'gyro [z/vref]'\r\n");
+        goto exit;
+    }
+
+    char buf[10];
+    uint16_t ret_val = 0;
+
+    if(strcmp("z", token) == 0){
+        ret_val = bh_measure_gyro_outz();
+    } else if(strcmp("vref", token) == 0){
+        ret_val = bh_measure_gyro_vref();
+    } else {
+        bh_uart_tx_str((uint8_t *)"Invalid operation\r\n");
+        goto exit;
+    }
+
+    snprintf(buf, 10, "%dh\r\n", ret_val);
+    bh_uart_tx_str((uint8_t *)buf);
+
+exit: ;
 }
