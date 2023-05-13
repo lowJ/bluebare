@@ -600,17 +600,17 @@ void StartDefaultTask(void *argument)
   cli_init(&huart1);
   bh_init(&hadc1, &htim2, &huart1, &htim3, &htim4, &hadc2);
 
-  bh_set_led(LED_BLUE, 1);
-  bh_set_led(LED_GREEN, 1);
-  bh_set_led(LED_RED, 1);
+  bh_set_led(LED_BLUE, 0);
+  bh_set_led(LED_GREEN, 0);
+  bh_set_led(LED_RED, 0);
 
   //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
 
   //bh_set_led(LED_RED, 0);
 
-  osDelay(2000);
+  //osDelay(2000);
 
-  nav_init();
+  //nav_init();
 
   //straight();
   /* Infinite loop */
@@ -618,9 +618,9 @@ void StartDefaultTask(void *argument)
 	for(;;) {
   //bh_set_led(LED_GREEN, 0);
   //osDelay(500);
- // bh_set_led(LED_GREEN, 1);
-    //bh_uart_tx_str("Hello World");
-   //osDelay(1000) ;
+  //bh_set_led(LED_GREEN, 1);
+  //  bh_uart_tx_str("Hello World\r\n");
+  // osDelay(1000) ;
 
     //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
     //bh_set_led(LED_RED, 0);
@@ -641,8 +641,9 @@ void StartDefaultTask(void *argument)
     //wait_for_start_signal();
 
     //turn_left(LEFT_TURN_180_CNTS);
-    cli_update();
-    osDelay(25);
+    //cli_update();
+    check_to_run_cmd();
+    //osDelay(25);
 
 		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 		//HAL_UART_Transmit(&huart2, (uint8_t*)&hello, strlen(hello), 100);
