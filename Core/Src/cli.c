@@ -34,16 +34,27 @@ static void handle_spd_cmd();
 static void handle_straight_cmd();
 static void handle_leftturn_cmd();
 static void handle_gyro_cmd();
+volatile uint8_t received;
+volatile bool uart_msg_done = false;
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+    //bh_uart_tx_str(&received);
+    if(uart_msg_done == false){
+        cli_update();
+        if(uart_msg_done == false) HAL_UART_Receive_IT(cli_uart, &received, 1);
+    }
+}
 
 void cli_init(UART_HandleTypeDef* uart_handle) {
     cli_uart = uart_handle;
+    HAL_UART_Receive_IT(cli_uart, &received, 1);
 }
 void cli_update() {
-    uint8_t received;
-    HAL_StatusTypeDef res = HAL_UART_Receive(cli_uart, &received, 1, RX_TIMEOUT);
-    if(res == HAL_OK){
+    //uint8_t received;
+    //HAL_StatusTypeDef res = HAL_UART_Receive(cli_uart, &received, 1, RX_TIMEOUT);
+    //if(res == HAL_OK){
         if(received == CHAR_ENTER_ASCII) {
-            handle_cmd();
+            uart_msg_done = true;
+            //handle_cmd();
         } else if(received == CHAR_DEL_ASCII) {
             if(cmd_buf_end > 0) {
                 cmd_buf_end--;
@@ -56,6 +67,13 @@ void cli_update() {
                 cmd_buf[cmd_buf_end++] = received;
             }
         }
+    //}
+}
+
+void check_to_run_cmd(){
+    if(uart_msg_done) {
+        handle_cmd();
+        uart_msg_done = false;
     }
 }
 
@@ -117,6 +135,7 @@ static void handle_cmd() {
 
 exit:
     cmd_buf_end = 0;
+    HAL_UART_Receive_IT(cli_uart, &received, 1);
 }
 
 //When calling this function, strtok must have just finished parsing the command prefix.

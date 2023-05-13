@@ -35,7 +35,7 @@ Core/Src/cli.o: ../Core/Src/cli.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
- ../Core/Inc/blue_hal.h
+ ../Core/Inc/blue_hal.h ../Core/Inc/nav.h ../Core/Inc/blue_hal.h
 
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h:
 
@@ -110,5 +110,9 @@ Core/Src/cli.o: ../Core/Src/cli.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h:
 
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
+
+../Core/Inc/blue_hal.h:
+
+../Core/Inc/nav.h:
 
 ../Core/Inc/blue_hal.h:
