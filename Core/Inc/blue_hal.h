@@ -36,8 +36,7 @@ typedef enum {
 	LED_GREEN,
 	LED_BLUE
 } bh_led_t;
-
-bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle, TIM_HandleTypeDef* tim3, TIM_HandleTypeDef* tim4);
+bool bh_init(ADC_HandleTypeDef* adc1, TIM_HandleTypeDef* tim2, UART_HandleTypeDef* uart_handle, TIM_HandleTypeDef* tim3, TIM_HandleTypeDef* tim4, ADC_HandleTypeDef* adc2);
 uint16_t bh_measure_dist(bh_dist_t dist);
 bool bh_set_motor_dir(bh_motor_t motor, bh_motor_dir_t dir);
 bool bh_set_motor_pwm(bh_motor_t motor, uint16_t dc);
@@ -47,5 +46,7 @@ bool bh_set_led(bh_led_t led, bool state);
 bool bh_set_buzzer(uint16_t tone, bool state); /* TODO: Verify params */
 uint16_t bh_get_enc_cnt(bh_motor_t motor);
 bool bh_reset_enc_cnt(bh_motor_t motor);
-
+uint16_t bh_measure_dist_avg(bh_dist_t dist_sensor);
+uint16_t bh_measure_gyro_outz();
+uint16_t bh_measure_gyro_vref();
 #endif /* INC_BLUE_HAL_H_ */

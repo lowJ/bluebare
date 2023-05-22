@@ -25,6 +25,7 @@
 #include <string.h>
 #include "cli.h"
 #include "blue_hal.h"
+#include "nav.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -34,6 +35,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define START_SIGNAL_DIST_FR 3000 /* TODO: Find value*/
+#define START_SIGNAL_DIST_R 1500/* TODO: Find value*/
+#define START_SIGNAL_DIST_RANGE 500 /* TODO: Find value*/ 
+#define DC_FOR_100_DC 1800
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -43,6 +48,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+ADC_HandleTypeDef hadc2;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
@@ -76,16 +82,28 @@ static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_ADC2_Init(void);
 void StartDefaultTask(void *argument);
 void taskBlinkFunc(void *argument);
 
 /* USER CODE BEGIN PFP */
-
+static void wait_for_start_signal();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static void wait_for_start_signal(){
+  while(1){
+    uint16_t fr = bh_measure_dist_avg(DIST_FR);
+    uint16_t r = bh_measure_dist_avg(DIST_R);
+    if(fr < START_SIGNAL_DIST_FR + START_SIGNAL_DIST_RANGE && fr > START_SIGNAL_DIST_FR - START_SIGNAL_DIST_RANGE
+      && r < START_SIGNAL_DIST_R + START_SIGNAL_DIST_RANGE && r > START_SIGNAL_DIST_R - START_SIGNAL_DIST_RANGE) {
+      break;
+    }
+    osDelay(100);
+  }
 
+}
 /* USER CODE END 0 */
 
 /**
@@ -121,6 +139,7 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM2_Init();
   MX_USART1_UART_Init();
+  MX_ADC2_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -268,6 +287,53 @@ static void MX_ADC1_Init(void)
 }
 
 /**
+  * @brief ADC2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC2_Init(void)
+{
+
+  /* USER CODE BEGIN ADC2_Init 0 */
+
+  /* USER CODE END ADC2_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC2_Init 1 */
+
+  /* USER CODE END ADC2_Init 1 */
+
+  /** Common config
+  */
+  hadc2.Instance = ADC2;
+  hadc2.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc2.Init.ContinuousConvMode = DISABLE;
+  hadc2.Init.DiscontinuousConvMode = DISABLE;
+  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc2.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc2.Init.NbrOfConversion = 1;
+  if (HAL_ADC_Init(&hadc2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc2, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC2_Init 2 */
+
+  /* USER CODE END ADC2_Init 2 */
+
+}
+
+/**
   * @brief TIM2 Initialization Function
   * @param None
   * @retval None
@@ -315,10 +381,6 @@ static void MX_TIM2_Init(void)
   sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
@@ -536,14 +598,55 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   cli_init(&huart1);
-  bh_init(&hadc1, &htim2, &huart1, &htim3, &htim4);
+  bh_init(&hadc1, &htim2, &huart1, &htim3, &htim4, &hadc2);
+
+  bh_set_led(LED_BLUE, 0);
+  bh_set_led(LED_GREEN, 0);
+  bh_set_led(LED_RED, 0);
+
+  //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
+
+  //bh_set_led(LED_RED, 0);
+
+  //osDelay(2000);
+
+  //nav_init();
+
+  //straight();
   /* Infinite loop */
 	char hello[] = "Hello World!\r\n";
 	for(;;) {
-    cli_update();
-    osDelay(25);
+  //bh_set_led(LED_GREEN, 0);
+  //osDelay(500);
+  //bh_set_led(LED_GREEN, 1);
+  //  bh_uart_tx_str("Hello World\r\n");
+  // osDelay(1000) ;
+
+    //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
+    //bh_set_led(LED_RED, 0);
+    //osDelay(500);
+    //turn_left();
+    //straight(4);
+
+    //wait_for_start_signal();
+    //straight(6);
+    //straight_till_wall();
+    //bh_set_led(LED_RED, 1);
+    //wait_for_start_signal();
+    //osDelay(1000);
+    //turn_left(LEFT_TURN_90_CNTS);
+    //osDelay(1000);
+    //straight(1);
+    //osDelay(1000);
+    //wait_for_start_signal();
+
+    //turn_left(LEFT_TURN_180_CNTS);
+    //cli_update();
+    check_to_run_cmd();
+    //osDelay(25);
+
 		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-		// HAL_UART_Transmit(&huart2, (uint8_t*)&hello, strlen(hello), 100);
+		//HAL_UART_Transmit(&huart2, (uint8_t*)&hello, strlen(hello), 100);
 		// osDelay(1000);
 		// HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 		// osDelay(1000);

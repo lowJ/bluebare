@@ -13,5 +13,6 @@
 
 void cli_init(UART_HandleTypeDef* uart_handle);
 void cli_update();
+void check_to_run_cmd();
 
 #endif /* INC_CLI_H_ */

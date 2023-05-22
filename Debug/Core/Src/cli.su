@@ -1,0 +1,16 @@
+cli.c:39:6:HAL_UART_RxCpltCallback	16	static
+cli.c:47:6:cli_init	16	static
+cli.c:51:6:cli_update	8	static
+cli.c:73:6:check_to_run_cmd	8	static
+cli.c:80:13:buf_is_full	4	static
+cli.c:87:13:handle_cmd	56	static
+cli.c:142:13:handle_cmd_prefix	16	static
+cli.c:166:13:handle_hw_cmd	8	static
+cli.c:170:13:handle_led_cmd	24	static
+cli.c:207:13:handle_sm_cmd	88	static
+cli.c:267:13:handle_dist_cmd	32	static
+cli.c:298:13:handle_enc_cmd	32	static
+cli.c:346:13:handle_spd_cmd	48	static
+cli.c:394:13:handle_leftturn_cmd	8	static
+cli.c:399:13:handle_straight_cmd	8	static
+cli.c:403:13:handle_gyro_cmd	32	static

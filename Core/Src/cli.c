@@ -6,6 +6,7 @@
 #include "cmsis_os.h"
 #include "cli.h"
 #include "blue_hal.h"
+#include "nav.h"
 
 #define CLI_CMD_BUF_SIZE 30
 
@@ -29,16 +30,31 @@ static void handle_led_cmd();
 static void handle_sm_cmd();
 static void handle_dist_cmd();
 static void handle_enc_cmd();
+static void handle_spd_cmd();
+static void handle_straight_cmd();
+static void handle_leftturn_cmd();
+static void handle_gyro_cmd();
+volatile uint8_t received;
+volatile bool uart_msg_done = false;
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+    //bh_uart_tx_str(&received);
+    if(uart_msg_done == false){
+        cli_update();
+        if(uart_msg_done == false) HAL_UART_Receive_IT(cli_uart, &received, 1);
+    }
+}
 
 void cli_init(UART_HandleTypeDef* uart_handle) {
     cli_uart = uart_handle;
+    HAL_UART_Receive_IT(cli_uart, &received, 1);
 }
 void cli_update() {
-    uint8_t received;
-    HAL_StatusTypeDef res = HAL_UART_Receive(cli_uart, &received, 1, RX_TIMEOUT);
-    if(res == HAL_OK){
+    //uint8_t received;
+    //HAL_StatusTypeDef res = HAL_UART_Receive(cli_uart, &received, 1, RX_TIMEOUT);
+    //if(res == HAL_OK){
         if(received == CHAR_ENTER_ASCII) {
-            handle_cmd();
+            uart_msg_done = true;
+            //handle_cmd();
         } else if(received == CHAR_DEL_ASCII) {
             if(cmd_buf_end > 0) {
                 cmd_buf_end--;
@@ -51,6 +67,13 @@ void cli_update() {
                 cmd_buf[cmd_buf_end++] = received;
             }
         }
+    //}
+}
+
+void check_to_run_cmd(){
+    if(uart_msg_done) {
+        handle_cmd();
+        uart_msg_done = false;
     }
 }
 
@@ -112,6 +135,7 @@ static void handle_cmd() {
 
 exit:
     cmd_buf_end = 0;
+    HAL_UART_Receive_IT(cli_uart, &received, 1);
 }
 
 //When calling this function, strtok must have just finished parsing the command prefix.
@@ -126,6 +150,14 @@ static void handle_cmd_prefix(char* token) {
             handle_led_cmd();
         } else if(strcmp("enc", token) ==0) {
             handle_enc_cmd();
+        } else if(strcmp("spd", token) ==0) {
+            handle_spd_cmd();
+        } else if(strcmp("str", token) ==0) {
+            handle_straight_cmd();
+        } else if(strcmp("lt", token) ==0) {
+            handle_leftturn_cmd();
+        } else if(strcmp("gyro", token) ==0) {
+            handle_gyro_cmd();
         } else {
             bh_uart_tx_str((uint8_t *)"Invalid Command! \r\n");
         }
@@ -308,5 +340,89 @@ static void handle_enc_cmd() {
     }
 
 exit: ;
+}
 
+
+static void handle_spd_cmd() {
+    const char delim[2] = " ";
+    char* token = strtok(NULL, delim);
+
+    if(token == NULL) {
+        bh_uart_tx_str((uint8_t *)"Usage spd [l/r] [f/b] \r\n");
+        goto exit;
+    }
+
+    bh_motor_dir_t motor;
+
+    if(strcmp("l", token) == 0) {
+        //Left motor
+        motor = MOTOR_LEFT;
+    } else if (strcmp("r", token) == 0) {
+        //Right motor
+        motor = MOTOR_RIGHT;
+    } else {
+        bh_uart_tx_str((uint8_t *)"Invalid motor. Use [l/r]\r\n");
+        goto exit;
+    }
+
+    token = strtok(NULL, delim);
+    if(token == NULL) {
+        bh_uart_tx_str((uint8_t *)"Usage spd [l/r] [f/b] \r\n");
+        goto exit;
+    }
+
+    if(strcmp("f", token) == 0) {
+        uint16_t spd = cnt_per_ms(motor, DIR_FORWARD);
+        char buf[10];
+        snprintf(buf, 10, "%d\r\n", spd);
+        bh_uart_tx_str((uint8_t *)buf);
+        
+    } else if (strcmp("b", token) == 0) {
+        uint16_t spd = cnt_per_ms(motor, DIR_BACKWARD);
+        char buf[10];
+        snprintf(buf, 10, "%d\r\n", spd);
+        bh_uart_tx_str((uint8_t *)buf);
+
+    } else {
+        bh_uart_tx_str((uint8_t *)"Usage spd [l/r] [f/b] \r\n");
+        goto exit;
+    }
+
+exit: ;
+}
+
+static void handle_leftturn_cmd(){
+    turn_left(LEFT_TURN_90_CNTS);
+
+}
+
+static void handle_straight_cmd() {
+    straight(4);
+}
+
+static void handle_gyro_cmd() {
+    const char delim[2] = " ";
+    char* token = strtok(NULL, delim);
+
+    if(token == NULL) {
+        bh_uart_tx_str((uint8_t *)"Usage 'gyro [z/vref]'\r\n");
+        goto exit;
+    }
+
+    char buf[10];
+    uint16_t ret_val = 0;
+
+    if(strcmp("z", token) == 0){
+        ret_val = bh_measure_gyro_outz();
+    } else if(strcmp("vref", token) == 0){
+        ret_val = bh_measure_gyro_vref();
+    } else {
+        bh_uart_tx_str((uint8_t *)"Invalid operation\r\n");
+        goto exit;
+    }
+
+    snprintf(buf, 10, "%dh\r\n", ret_val);
+    bh_uart_tx_str((uint8_t *)buf);
+
+exit: ;
 }
