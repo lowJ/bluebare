@@ -1,4 +1,9 @@
-nav.c:17:6:nav_init	8	static
-nav.c:23:6:is_left_wall_detected	16	static
-nav.c:34:6:is_right_wall_detected	16	static
-nav.c:49:6:straight	48	static
+nav.c:18:6:nav_init	16	static
+nav.c:45:6:is_left_wall_detected	16	static
+nav.c:56:6:is_right_wall_detected	16	static
+nav.c:72:6:straight	72	static
+nav.c:176:6:Move_One_Cell	96	static
+nav.c:289:6:straight_till_wall	48	static
+nav.c:344:6:turn_left	48	static
+nav.c:378:10:cnt_per_ms_lt	32	static
+nav.c:402:10:cnt_per_ms	24	static
