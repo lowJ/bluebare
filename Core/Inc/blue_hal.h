@@ -49,4 +49,7 @@ bool bh_reset_enc_cnt(bh_motor_t motor);
 uint16_t bh_measure_dist_avg(bh_dist_t dist_sensor);
 uint16_t bh_measure_gyro_outz();
 uint16_t bh_measure_gyro_vref();
+int32_t bh_measure_gyro_diffz();
+int32_t bh_gyro_avg();
+int32_t bh_get_angle();
 #endif /* INC_BLUE_HAL_H_ */

@@ -10,7 +10,7 @@
 #include "stm32f1xx_hal.h"
 #include "main.h"
 #include "string.h"
-
+#include <math.h>
 #define EMITTER_PULSE_TIME_MS 1/* TODO: Find Smallest Pulse Time */
 #define TX_TIMEOUT 10 /* TODO: Try makig 0*/
 #define NUM_AVG_SAMPLES 1
@@ -263,6 +263,50 @@ uint16_t bh_measure_gyro_vref(){
 
     HAL_ADC_Stop(hadc2);
     return adc_val;
+}
+
+int32_t bh_measure_gyro_diffz(){
+    int32_t ret = bh_measure_gyro_outz() - bh_measure_gyro_vref();
+    return ret;
+}
+
+int32_t bh_get_angle(){
+    uint32_t conv_factor = 1124;//1ADC = 1.124deg/s, Scaled up to avoid decimal
+
+    uint32_t acc = 0; 
+    uint32_t goal_acc = 90000; //90deg scaled
+    while(1){
+        uint32_t sample = conv_factor * (abs(1800 - bh_measure_gyro_outz()));
+        acc += sample/1000;
+
+
+        // char buf[10];
+        // snprintf(buf, 10, "%d\r\n", acc);
+        // bh_uart_tx_str((uint8_t *)buf);
+        
+        if(acc >= goal_acc/2){
+            bh_uart_tx_str("AT 90 DONE");
+
+            break;
+        }
+        HAL_Delay(1);
+    }
+
+    return 1 ;
+}
+
+int32_t bh_gyro_avg(){
+    float avg = 0;
+    for(int i = 0; i < 6000; i++) {
+        int32_t new_sample = bh_measure_gyro_diffz();
+        avg -= avg / 6000;
+        avg += new_sample / 6000;
+
+        HAL_Delay(1);
+    }
+    
+    return (int32_t)avg;
+
 }
 
 /* Private functions ---------------------------------------------------------*/

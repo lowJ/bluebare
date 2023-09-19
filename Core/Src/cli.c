@@ -386,17 +386,23 @@ static void handle_gyro_cmd() {
     char* token = strtok(NULL, delim);
 
     if(token == NULL) {
-        bh_uart_tx_str((uint8_t *)"Usage 'gyro [z/vref]'\r\n");
+        bh_uart_tx_str((uint8_t *)"Usage 'gyro [z/vref/diff]'\r\n");
         goto exit;
     }
 
     char buf[10];
-    uint16_t ret_val = 0;
+    int32_t ret_val = 0;
 
     if(strcmp("z", token) == 0){
         ret_val = bh_measure_gyro_outz();
     } else if(strcmp("vref", token) == 0){
         ret_val = bh_measure_gyro_vref();
+    } else if(strcmp("diff", token) == 0) {
+        ret_val = bh_measure_gyro_diffz();
+    } else if(strcmp("avg", token) == 0) {
+        ret_val = bh_gyro_avg();
+    } else if(strcmp("ang", token) == 0) {
+        ret_val = bh_get_angle();
     } else {
         bh_uart_tx_str((uint8_t *)"Invalid operation\r\n");
         goto exit;

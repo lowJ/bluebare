@@ -600,9 +600,9 @@ void StartDefaultTask(void *argument)
   cli_init(&huart1);
   bh_init(&hadc1, &htim2, &huart1, &htim3, &htim4, &hadc2);
 
-  bh_set_led(LED_BLUE, 1);
-  bh_set_led(LED_GREEN, 1);
-  bh_set_led(LED_RED, 1);
+  bh_set_led(LED_BLUE, 0);
+  bh_set_led(LED_GREEN, 0);
+  bh_set_led(LED_RED, 0);
 
   //wait_for_start_signal(); /* Blocking */ //TODO: Figure out dist measurements
 
@@ -610,7 +610,7 @@ void StartDefaultTask(void *argument)
 
   osDelay(2000);
 
-  nav_init();
+  //nav_init();
 
   //straight();
   /* Infinite loop */
